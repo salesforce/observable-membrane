@@ -1,0 +1,47 @@
+{
+  "name": "observable-membrane",
+  "version": "0.24.0",
+  "description": "Observable Membranes in JavaScript using Proxies",
+  "main": "dist/commonjs/observable-membrane.js",
+  "module": "dist/modules/observable-membrane.js",
+  "license": "MIT",
+  "author": "David Turissini <dave@turissini.co>",
+  "keywords": [
+    "proxy",
+    "membrane",
+    "observe",
+    "mutation"
+  ],
+  "homepage": "https://github.com/salesforce/observable-membrane",
+  "bugs": {
+    "url": "https://github.com/salesforce/observable-membrane/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:salesforce/observable-membrane.git"
+  },
+  "files": [
+    "src",
+    "dist/**/*.js"
+  ],
+  "scripts": {
+    "clean": "rm -rf dist",
+    "test": "jest --config jest.config.js --coverage",
+    "types": "tsc --noEmit",
+    "lint": "tslint -p tsconfig.json && npm run types",
+    "build": "rollup -c"
+  },
+  "devDependencies": {
+    "rollup": "0.60.1",
+    "rollup-plugin-typescript": "^0.8.1",
+    "rollup-plugin-replace": "^2.0.0",
+    "@types/jest": "~23.0.0",
+    "@types/node": "8.9.4",
+    "babel-minify": "0.4.3",
+    "jest": "~23.1.0",
+    "prettier": "~1.10.2",
+    "ts-jest": "~22.0.4",
+    "tslint": "~5.9.1",
+    "typescript": "2.7.2"
+  }
+}
