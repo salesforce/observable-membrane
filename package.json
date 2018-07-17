@@ -1,11 +1,11 @@
 {
   "name": "observable-membrane",
-  "version": "0.24.0",
-  "description": "Observable Membranes in JavaScript using Proxies",
+  "version": "0.25.0",
+  "description": "A Javascript Membrane implementation using Proxies to observe mutation on an object graph",
   "main": "dist/commonjs/observable-membrane.js",
   "module": "dist/modules/observable-membrane.js",
   "license": "MIT",
-  "author": "David Turissini <dave@turissini.co>",
+  "author": "David Turissini <dturissini@salesforce.com>",
   "keywords": [
     "proxy",
     "membrane",

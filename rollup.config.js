@@ -23,7 +23,6 @@ const baseRollupConfig = {
     footer,
 };
 
-
 function inlineMinifyPlugin() {
     return {
         transformBundle(code) {
@@ -34,7 +33,7 @@ function inlineMinifyPlugin() {
 
 function rollupConfig({ formats, prod }) {
     const plugins = [
-        typescript({ target: 'es5', typescript: require('typescript') }),
+        typescript({ target: 'es6', typescript: require('typescript') }),
         prod && replace({ 'process.env.NODE_ENV': JSON.stringify('production') }),
         prod && inlineMinifyPlugin({})
     ].filter(Boolean);

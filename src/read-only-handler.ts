@@ -27,7 +27,7 @@ interface ReadOnlyHandlerInit {
 }
 
 export class ReadOnlyHandler {
-    
+
     // TODO: makes these private fields
     originalTarget: any;
     membrane: ReactiveMembrane;

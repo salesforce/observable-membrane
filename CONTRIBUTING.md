@@ -45,7 +45,7 @@ dist/
     └── observable-membrane.min.js
 ```
 
-By default, when using this package in node, the `commonjs/` or `modules/` distro will be used. Additionally, you can use the `umd/` version directly in browsers that support `Proxy`.
+By default, when using this package in node, the `commonjs/` or `modules/` distribution will be used. Additionally, you can use the `umd/` version directly in browsers.
 
 ## Testing
 
@@ -81,9 +81,9 @@ This project relies on type annotations heavily.
 
 * Make sure your editor supports [typescript](https://www.typescriptlang.org/).
 
-### eslint
+### tslint
 
-[Configure your editor][eslint-integrations] to use our eslint configurations.
+[Configure your editor][tslint-integrations] to use our eslint configurations.
 
 ### editorconfig
 
@@ -168,5 +168,5 @@ _note: If more changes are needed as part of the pull request, just keep committ
 
 [setup-github-ssh]: https://help.github.com/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent/
 [creating-a-pull-request]: https://help.github.com/articles/creating-a-pull-request/
-[eslint-integrations]: http://eslint.org/docs/user-guide/integrations
+[tslint-integrations]: https://palantir.github.io/tslint/usage/third-party-tools/
 [editorconfig-plugins]: http://editorconfig.org/#download

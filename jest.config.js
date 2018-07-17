@@ -1,11 +1,12 @@
 module.exports = {
-    moduleFileExtensions: ['ts', 'js', 'json'],
-    transform: {
-        '.ts': require.resolve('ts-jest/preprocessor.js'),
-        '.js': require.resolve('ts-jest/preprocessor.js')
+    "transform": {
+        "^.+\\.ts$": "ts-jest"
     },
-    testMatch: [
-        '<rootDir>/**/__tests__/*.spec.(js|ts)'
-    ],
-    displayName: 'observable-membrane',
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(js|ts)$",
+    "moduleFileExtensions": [
+        "ts",
+        "js",
+        "json",
+        "node"
+    ]
 };

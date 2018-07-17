@@ -62,7 +62,6 @@ interface ReactiveProxyHandlerInit {
     valueObserved?: ReactiveMembraneAccessCallback;
 }
 
-
 export class ReactiveProxyHandler {
 
     // TODO: make these private fields
