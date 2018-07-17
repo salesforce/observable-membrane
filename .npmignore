@@ -1,7 +1,5 @@
-src
-coverage
-examples/
-jest.config.js
-rollup.config.js
-tsconfig.json
 .*
+coverage/
+examples/
+src/
+
