@@ -1,4 +1,4 @@
-import { isObservable } from './../shared';
+import { isObservable } from '../src/shared';
 
 describe('#isObservable', function() {
     it('should return true for plain objects', function() {

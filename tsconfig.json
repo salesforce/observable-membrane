@@ -16,5 +16,8 @@
     "noUnusedLocals": true,
     "suppressImplicitAnyIndexErrors": true,
     "noImplicitReturns": true,
-  }
+  },
+  "include": [
+    "src"
+  ]
 }
