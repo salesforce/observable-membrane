@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en-US">
+    <head>
+        <title>Reactivo Element Examples for ObservableMembrane</title>
+        <script src="../../dist/umd/observable-membrane.min.js"></script>
+        <script>
+            // ReactivoElement is a simple abstraction on top of Web Component
+            class ReactiveElement extends HTMLElement {
+                constructor() {
+                    super();
+                    // set up a membrane per instance
+                    this._membrane = new ObservableMembrane({
+                        valueMutated: () => {
+                            // this method is invoked when this.state object graph is mutated
+                            if (!this._isScheduled()) {
+                                this._scheduleRehydration();
+                            }
+                        }
+                    });
+                    // set up the shadow root
+                    this.attachShadow({ mode: 'open' });
+                }
+                get state() {
+                    return this._state;
+                }
+                set state(obj) {
+                    this._state = this._membrane.getProxy(obj);
+                }
+                rehydrate() { /* abstract method to be implemented by sub-classing */ }
+
+                // privates
+                _isScheduled() {
+                    return !!this._scheduled;
+                }
+                _scheduleRehydration() {
+                    this._scheduled = true;
+                    // scheduling rehydration for the next tick
+                    Promise.resolve().then(() => {
+                        this._scheduled = false;
+                        this.rehydrate();
+                    });
+                }
+            }
+        </script>
+        <script>
+            class XFoo extends ReactiveElement {
+                constructor() {
+                    super();
+                    // setting the initial state
+                    this.state = {
+                        x: 1,
+                        y: {
+                            z: 2,
+                        }
+                    };
+                    // setting up the initial UI
+                    this.shadowRoot.innerHTML = `
+                        <div class="x">
+                            <span></span> <button>increment x</button>
+                        </div>
+                        <div class="z">
+                            <span></span> <button>increment z</button>
+                        </div>
+                    `;
+                    // updating the initial UI with the initial state
+                    this.rehydrate();
+                    // setting event listener to capture user interaction
+                    this.shadowRoot.querySelector('.x button').addEventListener('click', () => this.state.x += 1);
+                    this.shadowRoot.querySelector('.z button').addEventListener('click', () => this.state.y.z += 1);
+                }
+                rehydrate() {
+                    // this method is responsible for updating the UI
+                    this.shadowRoot.querySelector('.x span').textContent = this.state.x;
+                    this.shadowRoot.querySelector('.z span').textContent = this.state.y.z;
+                }
+            }
+            customElements.define('x-foo', XFoo);
+        </script>
+    </head>
+    <body>
+        <h1>ReactivoElement abstraction for Web Components using Observable Membranes</h1>
+
+        <p>
+            <code>ReactivoElement</code> is a simple abstraction on top of Web Component that implements a `state` machinery, similar to React, that can update the UI every time a mutation in the `state` object graph is detected.
+        </p>
+
+        <p>
+            <code>ReactivoElement</code> creates a new membrane instance per element that is used to wrap the object value of `state` in order to detect mutations. When those mutations are detected, the element's `rehydrate()` method will be invoked to update the UI.
+        </p>
+        
+        <p>
+            Element <code>XFoo</code> extends <code>ReactivoElement</code>, which means it can rely on the `state` object to get its UI updated at any given time after a mutation is detected. 
+        </p>
+
+        <h2>XFoo element in action:</h2>
+
+        <x-foo></x-foo>
+
+    </body>
+</html>
