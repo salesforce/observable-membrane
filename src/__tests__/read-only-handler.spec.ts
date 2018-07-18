@@ -1,6 +1,6 @@
 import { ReactiveMembrane } from './../reactive-membrane';
 
-function doNothing(v) {
+function doNothing(_v: any) {
     /* do nothing */
 }
 
@@ -70,8 +70,8 @@ describe('ReadOnlyHandler', () => {
         });
 
         const property = target.getReadOnlyProxy(obj);
-        const desc = Object.getOwnPropertyDescriptor(property, 'foo');
-        expect(target.getReadOnlyProxy(desc.get())).toBe(property.foo);
+        const desc = Object.getOwnPropertyDescriptor(property, 'foo')!;
+        expect(target.getReadOnlyProxy(desc.get!())).toBe(property.foo);
     });
     it('should handle has correctly', function() {
         const target = new ReactiveMembrane();
