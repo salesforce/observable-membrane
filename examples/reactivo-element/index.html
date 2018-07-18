@@ -3,12 +3,13 @@
     <head>
         <title>Reactivo Element Examples for ObservableMembrane</title>
         <script src="../../dist/umd/observable-membrane.min.js"></script>
+
         <script>
             // ReactivoElement is a simple abstraction on top of Web Component
             class ReactiveElement extends HTMLElement {
                 constructor() {
                     super();
-                    // set up a membrane per instance
+                    // setting up a membrane per instance
                     this._membrane = new ObservableMembrane({
                         valueMutated: () => {
                             // this method is invoked when this.state object graph is mutated
@@ -17,7 +18,9 @@
                             }
                         }
                     });
-                    // set up the shadow root
+                    // setting up the initial state
+                    this.state = {};
+                    // setting up the shadow root
                     this.attachShadow({ mode: 'open' });
                 }
                 get state() {
@@ -42,6 +45,7 @@
                 }
             }
         </script>
+
         <script>
             class XFoo extends ReactiveElement {
                 constructor() {
@@ -64,7 +68,7 @@
                     `;
                     // updating the initial UI with the initial state
                     this.rehydrate();
-                    // setting event listener to capture user interaction
+                    // setting up the event listener to capture user interaction
                     this.shadowRoot.querySelector('.x button').addEventListener('click', () => this.state.x += 1);
                     this.shadowRoot.querySelector('.z button').addEventListener('click', () => this.state.y.z += 1);
                 }
@@ -76,6 +80,7 @@
             }
             customElements.define('x-foo', XFoo);
         </script>
+
     </head>
     <body>
         <h1>ReactivoElement abstraction for Web Components using Observable Membranes</h1>
