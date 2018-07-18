@@ -238,7 +238,7 @@ Unwrap the proxified version of the object from the membrane and return it's ori
 
 * This membrane implementation is tailored for observable objects, which are objects with the prototype chain set to `Object.prototype` or `null`. Any other object is not wrapped in a Proxy by design.
 * Distortion of Symbols and other built-in objects is possible via `valueDistortion` mechanism to avoid leaking internal.
-* membrane shutdown switch is not supported at the moment.
+* The ability for the membrane creator to revoke all proxies within it to prevent further mutations to the underlying objects (aka, membrane shutdown switch) is not supported at the moment.
 * A value mutation that is set to a read-only proxy value is allowed, but the subtree will still be read-only, e.g.: `const p = membrane.getProxy({}); p.abc = membrane.getReadOnlyProxy({}); p.abc.qwe = 1;` will throw because the value assigned to `abc` is still read only.
 
 ## Browser Compatibility
