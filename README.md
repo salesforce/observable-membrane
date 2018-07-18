@@ -18,24 +18,6 @@ Additionally, it supports distorting objects within an object graph, which could
 * Avoid leaking symbols and other non-observables objects.
 * Distorting values observed through the membrane.
 
-### API
-
-This package exposes a constructor called `ObservableMembrane` as the default export. This constructor expects an optional configuration object that can contain three callbacks, `valueObserved`, `valueMutated`, and `valueDistortion`. It returns a new membrane instance that contains three methods, `getProxy()`, `getReadOnlyProxy()`, and `unwrapProxy()`. 
-
-```ts
-interface ObservableMembraneInit {
-    valueMutated?: (obj: any, key: PropertyKey) => void;
-    valueObserved?: (obj: any, key: PropertyKey) => void;
-    valueDistortion?: (value: any) => any;
-}
-class ObservableMembrane {
-    constructor(options?: ObservableMembraneInit);
-    getProxy(o: object): proxy;
-    getReadOnlyProxy(o: object): proxy;
-    unwrapProxy(p: proxy): object;
-}
-```
-
 ### Usage
 
 The following example illustrates how to create an observable membrane, and proxies:
@@ -215,6 +197,47 @@ o.y !== p.x;
 o.y === membrane.unwrapProxy(p.y);
 // yields true because `membrane.unwrapProxy(p.y)` returns the original target `o.y`
 ```
+
+## API
+
+### `new ObservableMembrane([config])`
+
+Create a new membrane.
+
+**Parameters**
+
+* `config` <Object> Optional membrane configuration
+    * `valueObserved` <Function> Optional callback invoked when an observed  property is accessed. This function receives as argument the original target and the property key.
+    * `valueMutated` <Function> Optional callback invoked when an observed property is mutated. This function receives as argument the original target and the property key.
+    * `valueDistortion` <Function> Optional callback to apply distortion to the objects present in the object graph. This function receives as argument a newly added object in the object graph.
+
+
+### `ObservableMembrane.prototype.getProxy(object)`
+
+Wrap an object in the membrane. If `object` is observable it will return a proxified version of the object, otherwise it returns the original value.
+
+**Parameters**
+
+* `object` <Object> Object to wrap in the membrane.
+
+
+### `ObservableMembrane.prototype.getReadOnlyProxy(object)`
+
+Wrap an object in the read-only membrane. If `object` is observable it will return a proxified version of the object, otherwise it returns the original value.
+
+**Parameters**
+
+* `object` <Object> Object to wrap in the membrane.
+
+
+### `ObservableMembrane.prototype.unwrapProxy(proxy)`
+
+Unwrap the proxified version of the object from the membrane and return it's original value.
+
+**Parameters**
+
+* `proxy` <Object> Proxified object to unwrap from the membrane.
+
 
 ## Browser Compatibility
 
