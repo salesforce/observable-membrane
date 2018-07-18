@@ -196,7 +196,7 @@ o.y === membrane.unwrapProxy(p.y);
 
 ## Example
 
-There are [runnable examples][Examples] in this Git repository. You must build this package as described in the [Contributing Guide](CONTRIBUTING.md) before attempting to run the examples. Additionally, some of the examples might be relying on features that are not supported in all browsers (e.g.: `reactivo-element` example relies on Web Components APIs).
+There are [runnable examples](https://github.com/salesforce/observable-membrane/tree/master/examples) in this Git repository. You must build this package as described in the [Contributing Guide](CONTRIBUTING.md) before attempting to run the examples. Additionally, some of the examples might be relying on features that are not supported in all browsers (e.g.: [reactivo-element](https://github.com/salesforce/observable-membrane/tree/master/examples/reactivo-element) example relies on Web Components APIs).
 
 ## API
 
