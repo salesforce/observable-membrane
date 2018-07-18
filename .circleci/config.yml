@@ -1,0 +1,37 @@
+version: 2
+jobs:
+  build_and_test:
+    working_directory: ~/observable-membrane
+
+    docker:
+      - image: circleci/node:8.11.3-stretch-browsers
+
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+          - yarn-v4-{{ checksum "yarn.lock" }}
+
+      - run: yarn install --frozen-lockfile
+
+      - save_cache:
+          paths:
+            - ~/.cache/yarn
+            - node_modules
+            - packages/*/node_modules
+          key: yarn-v4-{{ checksum "yarn.lock" }}
+
+      - run:
+          name: Run Linting
+          command: yarn lint
+
+      - run:
+          name: Run Unit Tests
+          command: yarn test --ci --maxWorkers=2
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build_and_test
