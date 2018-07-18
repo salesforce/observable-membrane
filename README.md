@@ -206,28 +206,28 @@ Create a new membrane.
 
 **Parameters**
 
-* `config` <Object> Optional membrane configuration
-    * `valueObserved` <Function> Optional callback invoked when an observed  property is accessed. This function receives as argument the original target and the property key.
-    * `valueMutated` <Function> Optional callback invoked when an observed property is mutated. This function receives as argument the original target and the property key.
-    * `valueDistortion` <Function> Optional callback to apply distortion to the objects present in the object graph. This function receives as argument a newly added object in the object graph.
+* `config` [Object] [Optional] The membrane configuration
+    * `valueObserved` [Function] [Optional] Callback invoked when an observed  property is accessed. This function receives as argument the original target and the property key.
+    * `valueMutated` [Function] [Optional] Callback invoked when an observed property is mutated. This function receives as argument the original target and the property key.
+    * `valueDistortion` [Function] [Optional] Callback to apply distortion to the objects present in the object graph. This function receives as argument a newly added object in the object graph.
 
 
 ### `ObservableMembrane.prototype.getProxy(object)`
 
-Wrap an object in the membrane. If `object` is observable it will return a proxified version of the object, otherwise it returns the original value.
+Wrap an object in the membrane. If the `object` is observable it will return a proxified version of the object, otherwise it returns the original value.
 
 **Parameters**
 
-* `object` <Object> Object to wrap in the membrane.
+* `object` [Object] The object to wrap in the membrane.
 
 
 ### `ObservableMembrane.prototype.getReadOnlyProxy(object)`
 
-Wrap an object in the read-only membrane. If `object` is observable it will return a proxified version of the object, otherwise it returns the original value.
+Wrap an object in the read-only membrane. If the `object` is observable it will return a proxified version of the object, otherwise it returns the original value.
 
 **Parameters**
 
-* `object` <Object> Object to wrap in the membrane.
+* `object` [Object] The object to wrap in the membrane.
 
 
 ### `ObservableMembrane.prototype.unwrapProxy(proxy)`
@@ -236,7 +236,7 @@ Unwrap the proxified version of the object from the membrane and return it's ori
 
 **Parameters**
 
-* `proxy` <Object> Proxified object to unwrap from the membrane.
+* `proxy` [Object] Proxified object to unwrap from the membrane.
 
 
 ## Browser Compatibility
