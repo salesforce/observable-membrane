@@ -3,7 +3,8 @@
     // Compilation Configuration
     "target": "es2016",
     "declaration": true,
-    "module": "commonjs",
+    "module": "es2015",
+    "declarationDir": "dist/types",
 
     // Environment Configuration
     "experimentalDecorators": true,

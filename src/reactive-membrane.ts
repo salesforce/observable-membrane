@@ -28,7 +28,7 @@ export type ReactiveMembraneAccessCallback = (obj: any, key: PropertyKey) => voi
 export type ReactiveMembraneMutationCallback = (obj: any, key: PropertyKey) => void;
 export type ReactiveMembraneDistortionCallback = (value: any) => any;
 
-interface ObservableMembraneInit {
+export interface ObservableMembraneInit {
     valueMutated?: ReactiveMembraneMutationCallback;
     valueObserved?: ReactiveMembraneAccessCallback;
     valueDistortion?: ReactiveMembraneDistortionCallback;
@@ -45,12 +45,10 @@ function createShadowTarget(value: any): ReactiveMembraneShadowTarget {
 }
 
 export class ReactiveMembrane {
-
-    // TODO: make these private fields
-    valueDistortion: ReactiveMembraneDistortionCallback | undefined;
-    valueMutated: ReactiveMembraneMutationCallback | undefined;
-    valueObserved: ReactiveMembraneAccessCallback | undefined;
-    objectGraph: WeakMap<any, ReactiveState> = new WeakMap();
+    private valueDistortion?: ReactiveMembraneDistortionCallback;
+    private valueMutated?: ReactiveMembraneMutationCallback;
+    private valueObserved?: ReactiveMembraneAccessCallback;
+    private objectGraph: WeakMap<any, ReactiveState> = new WeakMap();
 
     constructor(options?: ObservableMembraneInit) {
         if (!isUndefined(options)) {
@@ -64,7 +62,7 @@ export class ReactiveMembrane {
         const { valueDistortion } = this;
         const distorted = isUndefined(valueDistortion) ? value : valueDistortion(value);
         if (isObservable(distorted)) {
-            const o = this._getReactiveState(distorted);
+            const o = this.getReactiveState(distorted);
             // when trying to extract the writable version of a readonly
             // we return the readonly.
             return o.readOnly === value ? value : o.reactive;
@@ -76,7 +74,7 @@ export class ReactiveMembrane {
         const { valueDistortion } = this;
         const distorted = isUndefined(valueDistortion) ? value : valueDistortion(value);
         if (isObservable(distorted)) {
-            return this._getReactiveState(distorted).readOnly;
+            return this.getReactiveState(distorted).readOnly;
         }
         return distorted;
     }
@@ -85,8 +83,7 @@ export class ReactiveMembrane {
         return unwrap(p);
     }
 
-    // TODO: make these private methods
-    _getReactiveState(value: any): ReactiveState {
+    private getReactiveState(value: any): ReactiveState {
         const membrane = this;
         const {
             objectGraph,

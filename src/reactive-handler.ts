@@ -57,18 +57,16 @@ function lockShadowTarget(membrane: ReactiveMembrane, shadowTarget: ReactiveMemb
     preventExtensions(shadowTarget);
 }
 
-interface ReactiveProxyHandlerInit {
+export interface ReactiveProxyHandlerInit {
     valueMutated?: ReactiveMembraneMutationCallback;
     valueObserved?: ReactiveMembraneAccessCallback;
 }
 
 export class ReactiveProxyHandler {
-
-    // TODO: make these private fields
-    originalTarget: any;
-    membrane: ReactiveMembrane;
-    valueObserved: ReactiveMembraneAccessCallback | undefined;
-    valueMutated: ReactiveMembraneMutationCallback | undefined;
+    private originalTarget: any;
+    private membrane: ReactiveMembrane;
+    private valueObserved?: ReactiveMembraneAccessCallback;
+    private valueMutated?: ReactiveMembraneMutationCallback;
 
     constructor(membrane: ReactiveMembrane, value: any, options?: ReactiveProxyHandlerInit) {
         this.originalTarget = value;

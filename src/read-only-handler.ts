@@ -22,16 +22,14 @@ function wrapDescriptor(membrane: ReactiveMembrane, descriptor: PropertyDescript
     return descriptor;
 }
 
-interface ReadOnlyHandlerInit {
+export interface ReadOnlyHandlerInit {
     valueObserved?: ReactiveMembraneAccessCallback;
 }
 
 export class ReadOnlyHandler {
-
-    // TODO: makes these private fields
-    originalTarget: any;
-    membrane: ReactiveMembrane;
-    valueObserved: ReactiveMembraneAccessCallback | undefined;
+    private originalTarget: any;
+    private membrane: ReactiveMembrane;
+    private valueObserved?: ReactiveMembraneAccessCallback;
 
     constructor(membrane: ReactiveMembrane, value: any, options?: ReadOnlyHandlerInit) {
         this.originalTarget = value;
