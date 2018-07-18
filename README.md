@@ -193,6 +193,10 @@ o.y === membrane.unwrapProxy(p.y);
 // yields true because `membrane.unwrapProxy(p.y)` returns the original target `o.y`
 ```
 
+## Example
+
+There are [runnable examples][Examples] in this Git repository. You must build this package as described in the [Contributing Guide](CONTRIBUTING.md) before attempting to run the examples. Additionally, some of the examples might be relying on features that are not supported in all browsers (e.g.: `reactivo-element` example relies on Web Components APIs).
+
 ## API
 
 ### `new ObservableMembrane([config])`
