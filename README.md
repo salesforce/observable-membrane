@@ -103,11 +103,6 @@ const membrane = new ObservableMembrane({
         // and key is the key that was read
         console.log('accessed ', key);
     },
-    valueMutated(target, key) {
-        // where target is the object that was mutated
-        // and key is the key that was mutated
-        console.log('mutated ', key);
-    },
 });
 
 const o = {
