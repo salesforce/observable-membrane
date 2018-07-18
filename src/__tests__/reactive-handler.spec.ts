@@ -1,6 +1,6 @@
 import { ReactiveMembrane } from './../reactive-membrane';
 
-function doNothing(v) {
+function doNothing(_v: any) {
     /* do nothing */
 }
 
@@ -147,8 +147,8 @@ describe('ReactiveHandler', () => {
         });
 
         const property = target.getProxy(obj);
-        const desc = Object.getOwnPropertyDescriptor(property, 'foo');
-        expect(target.getProxy(desc.get())).toBe(property.foo);
+        const desc = Object.getOwnPropertyDescriptor(property, 'foo')!;
+        expect(target.getProxy(desc.get!())).toBe(property.foo);
     });
     it('should handle has correctly', function() {
         const target = new ReactiveMembrane();
