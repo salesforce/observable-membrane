@@ -1,4 +1,5 @@
 # Observable Membrane
+Creating robust JavaScript code becomes increasingly important as web applications become more sophisticated. The dynamic nature of JavaScript code at runtime has always presented challenges for developers.
 
 This package implements an observable membrane in JavaScript using Proxies.
 
