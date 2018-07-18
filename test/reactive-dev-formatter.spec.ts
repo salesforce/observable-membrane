@@ -1,5 +1,5 @@
-import './../reactive-dev-formatter';
-import { ReactiveMembrane } from './../reactive-membrane';
+import '../src/reactive-dev-formatter';
+import { ReactiveMembrane } from '../src/reactive-membrane';
 
 describe('reactive dev formatter', function() {
     it('should add an array to window', function() {

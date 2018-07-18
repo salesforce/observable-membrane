@@ -4,6 +4,7 @@
   "description": "A Javascript Membrane implementation using Proxies to observe mutation on an object graph",
   "main": "dist/umd/observable-membrane.js",
   "module": "dist/modules/observable-membrane.js",
+  "typings": "dist/types/main.d.ts",
   "license": "MIT",
   "author": "David Turissini <dturissini@salesforce.com>",
   "keywords": [
@@ -21,14 +22,13 @@
     "url": "git@github.com:salesforce/observable-membrane.git"
   },
   "files": [
-    "dist/**/*.js"
+    "dist"
   ],
   "scripts": {
-    "clean": "rm -rf dist",
+    "lint": "tslint -p tsconfig.json",
     "test": "jest --config jest.config.js --coverage",
-    "types": "tsc --noEmit",
-    "lint": "tslint -p tsconfig.json && npm run types",
-    "build": "rollup -c"
+    "prebuild": "rm -rf dist",
+    "build": "tsc --emitDeclarationOnly && rollup -c"
   },
   "devDependencies": {
     "rollup": "0.60.1",

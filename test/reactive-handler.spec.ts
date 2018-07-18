@@ -1,4 +1,4 @@
-import { ReactiveMembrane } from './../reactive-membrane';
+import { ReactiveMembrane } from '../src/reactive-membrane';
 
 function doNothing(_v: any) {
     /* do nothing */
