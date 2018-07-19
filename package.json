@@ -33,11 +33,18 @@
     "changelog:generate": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0",
     "changelog:publish": "git add CHANGELOG.md && git commit -m 'docs(changelog): publish release changelog' && git push"
   },
+  "husky": {
+    "hooks": {
+        "commit-msg": "commitlint -e $GIT_PARAMS"
+    }
+  },
   "devDependencies": {
     "@types/jest": "~23.0.0",
     "@types/node": "8.9.4",
     "babel-minify": "0.4.3",
     "conventional-changelog-cli": "^2.0.1",
+    "@commitlint/cli": "^7.0.0",
+    "@commitlint/config-conventional": "^7.0.1",
     "jest": "~23.1.0",
     "rollup": "0.60.1",
     "rollup-plugin-replace": "~2.0.0",
@@ -45,5 +52,8 @@
     "ts-jest": "~22.0.4",
     "tslint": "~5.9.1",
     "typescript": "2.7.2"
+  },
+  "dependencies": {
+    "husky": "1.0.0-rc.13"
   }
 }
