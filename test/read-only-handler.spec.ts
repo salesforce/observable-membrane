@@ -271,4 +271,22 @@ describe('ReadOnlyHandler', () => {
             doNothing(readOnly.foo);
         }).not.toThrow();
     });
+    it('should throw when attempting to change the prototype', function() {
+        const target = new ReactiveMembrane();
+        const obj = { foo: 'bar' };
+
+        const property = target.getReadOnlyProxy(obj);
+        expect(() => {
+            Object.setPrototypeOf(property, {});
+        }).toThrow();
+    });
+    it('should throw when attempting to change the prototype of a member property', function() {
+        const target = new ReactiveMembrane();
+        const obj = { foo: { bar: 'baz' } };
+
+        const property = target.getReadOnlyProxy(obj);
+        expect(() => {
+            Object.setPrototypeOf(property.foo, {});
+        }).toThrow();
+    });
 });
