@@ -7,6 +7,7 @@ A membrane can be created to control access to a module graph, observe what the 
 
 ## What is a Membrane
 
+* [Tom van Cutsem's original article, "Isolating application sub-components with membranes"](https://tvcutsem.github.io/membranes)
 * [Tom van Cutsem's original article, "Membranes in JavaScript"](https://tvcutsem.github.io/js-membranes)
 * [es-membrane library by Alexander J. Vincent](https://github.com/ajvincent/es-membrane)
 
