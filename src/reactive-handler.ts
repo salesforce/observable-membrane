@@ -43,7 +43,7 @@ function lockShadowTarget(membrane: ReactiveMembrane, shadowTarget: ReactiveMemb
     targetKeys.forEach((key: PropertyKey) => {
         let descriptor = getOwnPropertyDescriptor(originalTarget, key) as PropertyDescriptor;
 
-        // We do not need to wrap the descriptor if not configurable
+        // We do not need to wrap the descriptor if configurable
         // Because we can deal with wrapping it when user goes through
         // Get own property descriptor. There is also a chance that this descriptor
         // could change sometime in the future, so we can defer wrapping

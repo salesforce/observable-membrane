@@ -271,4 +271,41 @@ describe('ReadOnlyHandler', () => {
             doNothing(readOnly.foo);
         }).not.toThrow();
     });
+
+    describe.skip('issue#20 - getOwnPropertyDescriptor', () => {
+        it('should return reactive proxy when property accessed via raw getter', () => {
+            const target = new ReactiveMembrane();
+            const todos = {};
+            Object.defineProperty(todos, 'entry', {
+                get() {
+                    return { foo: 'bar' };
+                },
+                configurable: true
+            });
+
+            const proxy = target.getReadOnlyProxy(todos);
+            const desc = Object.getOwnPropertyDescriptor(proxy, 'entry');
+            const { get } = desc;
+            expect(() => { 
+                get().foo = '';
+            }).toThrow();
+            expect(todos['entry'].foo).toEqual('bar');
+        });
+        it('should return reactive proxy when property accessed via descriptor', () => {
+            const target = new ReactiveMembrane();
+            const todos = {};
+            Object.defineProperty(todos, 'entry', {
+                value : { foo: 'bar' },
+                configurable: true
+            });
+
+            const proxy = target.getReadOnlyProxy(todos);
+            const desc = Object.getOwnPropertyDescriptor(proxy, 'entry');
+            const { value } = desc;
+            expect( () => {
+                value.foo = '';
+            }).toThrow();
+            expect(todos['entry'].foo).toEqual('bar');
+        });
+    })
 });
