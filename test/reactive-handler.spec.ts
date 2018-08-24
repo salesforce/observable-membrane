@@ -595,7 +595,7 @@ describe('ReactiveHandler', () => {
     });
 
     describe.skip('issue#20 - getOwnPropertyDescriptor', () => {
-        it('should return reactive proxy when property accessed via raw getter', () => {
+        it('should return reactive proxy when property value accessed via accessor descriptor', () => {
             const target = new ReactiveMembrane();
             const todos = {};
             const observable = {};
@@ -614,7 +614,7 @@ describe('ReactiveHandler', () => {
             const { get } = desc;
             expect(get()).toBe(expected);
         });
-        it('should return reactive proxy when property accessed via descriptor', () => {
+        it('should return reactive proxy when property value accessed via data descriptor', () => {
             const target = new ReactiveMembrane();
             const todos = {};
             const observable = {};

@@ -273,7 +273,7 @@ describe('ReadOnlyHandler', () => {
     });
 
     describe.skip('issue#20 - getOwnPropertyDescriptor', () => {
-        it('should return reactive proxy when property accessed via raw getter', () => {
+        it('readonly proxy prevents mutation when value accessed via accessor descriptor', () => {
             const target = new ReactiveMembrane();
             const todos = {};
             Object.defineProperty(todos, 'entry', {
@@ -291,7 +291,7 @@ describe('ReadOnlyHandler', () => {
             }).toThrow();
             expect(todos['entry'].foo).toEqual('bar');
         });
-        it('should return reactive proxy when property accessed via descriptor', () => {
+        it('readonly proxy prevents mutation when value accessed via data descriptor', () => {
             const target = new ReactiveMembrane();
             const todos = {};
             Object.defineProperty(todos, 'entry', {
