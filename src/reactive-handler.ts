@@ -3,7 +3,6 @@ import {
     isUndefined,
     TargetSlot,
     unwrap,
-    isObservable,
     ArrayConcat,
     isArray,
     ObjectDefineProperty,
@@ -18,8 +17,6 @@ import {
 import {
     ReactiveMembrane,
     ReactiveMembraneShadowTarget,
-    ReactiveMembraneMutationCallback,
-    ReactiveMembraneAccessCallback,
 } from './reactive-membrane';
 
 // Unwrap property descriptors
@@ -33,7 +30,7 @@ function unwrapDescriptor(descriptor: PropertyDescriptor): PropertyDescriptor {
 
 function wrapDescriptor(membrane: ReactiveMembrane, descriptor: PropertyDescriptor): PropertyDescriptor {
     if ('value' in descriptor) {
-        descriptor.value = isObservable(descriptor.value) ? membrane.getProxy(descriptor.value) : descriptor.value;
+        descriptor.value = membrane.valueIsObservable(descriptor.value) ? membrane.getProxy(descriptor.value) : descriptor.value;
     }
     return descriptor;
 }
@@ -57,24 +54,13 @@ function lockShadowTarget(membrane: ReactiveMembrane, shadowTarget: ReactiveMemb
     preventExtensions(shadowTarget);
 }
 
-export interface ReactiveProxyHandlerInit {
-    valueMutated?: ReactiveMembraneMutationCallback;
-    valueObserved?: ReactiveMembraneAccessCallback;
-}
-
 export class ReactiveProxyHandler {
     private originalTarget: any;
     private membrane: ReactiveMembrane;
-    private valueObserved?: ReactiveMembraneAccessCallback;
-    private valueMutated?: ReactiveMembraneMutationCallback;
 
-    constructor(membrane: ReactiveMembrane, value: any, options?: ReactiveProxyHandlerInit) {
+    constructor(membrane: ReactiveMembrane, value: any) {
         this.originalTarget = value;
         this.membrane = membrane;
-        if (!isUndefined(options)) {
-            this.valueMutated = options.valueMutated;
-            this.valueObserved = options.valueObserved;
-        }
     }
     get(shadowTarget: ReactiveMembraneShadowTarget, key: PropertyKey): any {
         const { originalTarget, membrane } = this;
@@ -82,37 +68,29 @@ export class ReactiveProxyHandler {
             return originalTarget;
         }
         const value = originalTarget[key];
-        const { valueObserved } = this;
-        if (!isUndefined(valueObserved)) {
-            valueObserved(originalTarget, key);
-        }
+        const { valueObserved } = membrane;
+        valueObserved(originalTarget, key);
         return membrane.getProxy(value);
     }
     set(shadowTarget: ReactiveMembraneShadowTarget, key: PropertyKey, value: any): boolean {
-        const { originalTarget, valueMutated } = this;
+        const { originalTarget, membrane: { valueMutated } } = this;
         const oldValue = originalTarget[key];
         if (oldValue !== value) {
             originalTarget[key] = value;
-            if (!isUndefined(valueMutated)) {
-                valueMutated(originalTarget, key);
-            }
+            valueMutated(originalTarget, key);
         } else if (key === 'length' && isArray(originalTarget)) {
             // fix for issue #236: push will add the new index, and by the time length
             // is updated, the internal length is already equal to the new length value
             // therefore, the oldValue is equal to the value. This is the forking logic
             // to support this use case.
-            if (!isUndefined(valueMutated)) {
-                valueMutated(originalTarget, key);
-            }
+            valueMutated(originalTarget, key);
         }
         return true;
     }
     deleteProperty(shadowTarget: ReactiveMembraneShadowTarget, key: PropertyKey): boolean {
-        const { originalTarget, valueMutated } = this;
+        const { originalTarget, membrane: { valueMutated } } = this;
         delete originalTarget[key];
-        if (!isUndefined(valueMutated)) {
-            valueMutated(originalTarget, key);
-        }
+        valueMutated(originalTarget, key);
         return true;
     }
     apply(shadowTarget: ReactiveMembraneShadowTarget, thisArg: any, argArray: any[]) {
@@ -122,10 +100,8 @@ export class ReactiveProxyHandler {
         /* No op */
     }
     has(shadowTarget: ReactiveMembraneShadowTarget, key: PropertyKey): boolean {
-        const { originalTarget, valueObserved } = this;
-        if (!isUndefined(valueObserved)) {
-            valueObserved(originalTarget, key);
-        }
+        const { originalTarget, membrane: { valueObserved } } = this;
+        valueObserved(originalTarget, key);
         return key in originalTarget;
     }
     ownKeys(shadowTarget: ReactiveMembraneShadowTarget): string[] {
@@ -158,12 +134,11 @@ export class ReactiveProxyHandler {
         return getPrototypeOf(originalTarget);
     }
     getOwnPropertyDescriptor(shadowTarget: ReactiveMembraneShadowTarget, key: PropertyKey): PropertyDescriptor | undefined {
-        const { originalTarget, membrane, valueObserved } = this;
+        const { originalTarget, membrane } = this;
+        const { valueObserved } = this.membrane;
 
         // keys looked up via hasOwnProperty need to be reactive
-        if (!isUndefined(valueObserved)) {
-            valueObserved(originalTarget, key);
-        }
+        valueObserved(originalTarget, key);
 
         let desc = getOwnPropertyDescriptor(originalTarget, key);
         if (isUndefined(desc)) {
@@ -188,7 +163,8 @@ export class ReactiveProxyHandler {
         return true;
     }
     defineProperty(shadowTarget: ReactiveMembraneShadowTarget, key: PropertyKey, descriptor: PropertyDescriptor): boolean {
-        const { originalTarget, membrane, valueMutated } = this;
+        const { originalTarget, membrane } = this;
+        const { valueMutated } = membrane;
         const { configurable } = descriptor;
 
         // We have to check for value in descriptor
@@ -207,9 +183,7 @@ export class ReactiveProxyHandler {
             ObjectDefineProperty(shadowTarget, key, wrapDescriptor(membrane, descriptor));
         }
 
-        if (!isUndefined(valueMutated)) {
-            valueMutated(originalTarget, key);
-        }
+        valueMutated(originalTarget, key);
         return true;
     }
 }

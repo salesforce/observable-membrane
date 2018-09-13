@@ -1,7 +1,6 @@
 import {
     isUndefined,
     TargetSlot,
-    isObservable,
     ArrayConcat,
     ObjectDefineProperty,
     getOwnPropertyDescriptor,
@@ -12,31 +11,22 @@ import {
 import {
     ReactiveMembrane,
     ReactiveMembraneShadowTarget,
-    ReactiveMembraneAccessCallback,
 } from './reactive-membrane';
 
 function wrapDescriptor(membrane: ReactiveMembrane, descriptor: PropertyDescriptor): PropertyDescriptor {
     if ('value' in descriptor) {
-        descriptor.value = isObservable(descriptor.value) ? membrane.getReadOnlyProxy(descriptor.value) : descriptor.value;
+        descriptor.value = membrane.valueIsObservable(descriptor.value) ? membrane.getReadOnlyProxy(descriptor.value) : descriptor.value;
     }
     return descriptor;
-}
-
-export interface ReadOnlyHandlerInit {
-    valueObserved?: ReactiveMembraneAccessCallback;
 }
 
 export class ReadOnlyHandler {
     private originalTarget: any;
     private membrane: ReactiveMembrane;
-    private valueObserved?: ReactiveMembraneAccessCallback;
 
-    constructor(membrane: ReactiveMembrane, value: any, options?: ReadOnlyHandlerInit) {
+    constructor(membrane: ReactiveMembrane, value: any) {
         this.originalTarget = value;
         this.membrane = membrane;
-        if (!isUndefined(options)) {
-            this.valueObserved = options.valueObserved;
-        }
     }
     get(shadowTarget: ReactiveMembraneShadowTarget, key: PropertyKey): any {
         const { membrane, originalTarget } = this;
@@ -44,10 +34,8 @@ export class ReadOnlyHandler {
             return originalTarget;
         }
         const value = originalTarget[key];
-        const { valueObserved } = this;
-        if (!isUndefined(valueObserved)) {
-            valueObserved(originalTarget, key);
-        }
+        const { valueObserved } = membrane;
+        valueObserved(originalTarget, key);
         return membrane.getReadOnlyProxy(value);
     }
     set(shadowTarget: ReactiveMembraneShadowTarget, key: PropertyKey, value: any): boolean {
@@ -71,11 +59,8 @@ export class ReadOnlyHandler {
         /* No op */
     }
     has(shadowTarget: ReactiveMembraneShadowTarget, key: PropertyKey): boolean {
-        const { originalTarget } = this;
-        const { valueObserved } = this;
-        if (!isUndefined(valueObserved)) {
-            valueObserved(originalTarget, key);
-        }
+        const { originalTarget, membrane: { valueObserved } } = this;
+        valueObserved(originalTarget, key);
         return key in originalTarget;
     }
     ownKeys(shadowTarget: ReactiveMembraneShadowTarget): string[] {
@@ -89,12 +74,11 @@ export class ReadOnlyHandler {
         }
     }
     getOwnPropertyDescriptor(shadowTarget: ReactiveMembraneShadowTarget, key: PropertyKey): PropertyDescriptor | undefined {
-        const { originalTarget, membrane, valueObserved } = this;
+        const { originalTarget, membrane } = this;
+        const { valueObserved } = membrane;
 
         // keys looked up via hasOwnProperty need to be reactive
-        if (!isUndefined(valueObserved)) {
-            valueObserved(originalTarget, key);
-        }
+        valueObserved(originalTarget, key);
 
         let desc = getOwnPropertyDescriptor(originalTarget, key);
         if (isUndefined(desc)) {

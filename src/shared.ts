@@ -34,8 +34,6 @@ export {
     preventExtensions,
 };
 
-const ObjectDotPrototype = Object.prototype;
-
 const OtS = {}.toString;
 export function toString(obj: any): string {
     if (obj && obj.toString) {
@@ -51,6 +49,10 @@ export function isUndefined(obj: any): obj is undefined {
     return obj === undefined;
 }
 
+export function isFunction(obj: any): obj is Function {
+    return typeof obj === 'function';
+}
+
 export const TargetSlot = Symbol();
 
 // TODO: we are using a funky and leaky abstraction here to try to identify if
@@ -61,19 +63,6 @@ const { getKey } = Proxy;
 export const unwrap = getKey ?
     (replicaOrAny: any): any => (replicaOrAny && getKey(replicaOrAny, TargetSlot)) || replicaOrAny
     : (replicaOrAny: any): any => (replicaOrAny && replicaOrAny[TargetSlot]) || replicaOrAny;
-
-export function isObservable(value: any): boolean {
-    // intentionally checking for null and undefined
-    if (value == null) {
-        return false;
-    }
-    if (isArray(value)) {
-        return true;
-    }
-
-    const proto = getPrototypeOf(value);
-    return (proto === ObjectDotPrototype || proto === null || getPrototypeOf(proto) === null);
-}
 
 export function isObject(obj: any): obj is object {
     return typeof obj === 'object';
