@@ -271,6 +271,42 @@ describe('ReadOnlyHandler', () => {
             doNothing(readOnly.foo);
         }).not.toThrow();
     });
+    describe.skip('issue#20 - getOwnPropertyDescriptor', () => {
+        it('readonly proxy prevents mutation when value accessed via accessor descriptor', () => {
+            const target = new ReactiveMembrane();
+            const todos = {};
+            Object.defineProperty(todos, 'entry', {
+                get() {
+                    return { foo: 'bar' };
+                },
+                configurable: true
+            });
+
+            const proxy = target.getReadOnlyProxy(todos);
+            const desc = Object.getOwnPropertyDescriptor(proxy, 'entry');
+            const { get } = desc;
+            expect(() => { 
+                get().foo = '';
+            }).toThrow();
+            expect(todos['entry'].foo).toEqual('bar');
+        });
+        it('readonly proxy prevents mutation when value accessed via data descriptor', () => {
+            const target = new ReactiveMembrane();
+            const todos = {};
+            Object.defineProperty(todos, 'entry', {
+                value : { foo: 'bar' },
+                configurable: true
+            });
+
+            const proxy = target.getReadOnlyProxy(todos);
+            const desc = Object.getOwnPropertyDescriptor(proxy, 'entry');
+            const { value } = desc;
+            expect( () => {
+                value.foo = '';
+            }).toThrow();
+            expect(todos['entry'].foo).toEqual('bar');
+        });
+    });
     it('should throw when attempting to change the prototype', function() {
         const target = new ReactiveMembrane();
         const obj = { foo: 'bar' };

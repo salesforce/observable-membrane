@@ -593,4 +593,43 @@ describe('ReactiveHandler', () => {
         expect(accessSpy).toHaveBeenCalledTimes(2);
         expect(accessSpy).toHaveBeenLastCalledWith(obj.foo, 'bar');
     });
+
+    describe.skip('issue#20 - getOwnPropertyDescriptor', () => {
+        it('should return reactive proxy when property value accessed via accessor descriptor', () => {
+            const target = new ReactiveMembrane();
+            const todos = {};
+            const observable = {};
+            Object.defineProperty(todos, 'foo', {
+                get() {
+                    return observable;
+                },
+                configurable: true
+            });
+            const expected = target.getProxy(observable);
+
+            const proxy = target.getProxy(todos);
+            expect(proxy.foo).toBe(expected);
+
+            const desc = Object.getOwnPropertyDescriptor(proxy, 'foo');
+            const { get } = desc;
+            expect(get()).toBe(expected);
+        });
+        it('should return reactive proxy when property value accessed via data descriptor', () => {
+            const target = new ReactiveMembrane();
+            const todos = {};
+            const observable = {};
+            Object.defineProperty(todos, 'foo', {
+                value : observable,
+                configurable: true
+            });
+            const expected = target.getProxy(observable);
+
+            const proxy = target.getProxy(todos);
+            expect(proxy.foo).toBe(expected);
+
+            const desc = Object.getOwnPropertyDescriptor(proxy, 'foo');
+            const { value } = desc;
+            expect(value).toBe(expected);
+        });
+    })
 });
