@@ -6,6 +6,7 @@ import {
     isUndefined,
     getPrototypeOf,
     isFunction,
+    hasOwnProperty,
 } from './shared';
 import { ReactiveProxyHandler } from './reactive-handler';
 import { ReadOnlyHandler } from './read-only-handler';
@@ -70,18 +71,19 @@ const defaultValueDistortion: ReactiveMembraneDistortionCallback = (value: any) 
 
 export function wrapDescriptor(membrane: ReactiveMembrane, descriptor: PropertyDescriptor, getValue: (membrane: ReactiveMembrane, originalValue: any) => any): PropertyDescriptor {
     const { set, get } = descriptor;
-    if ('value' in descriptor) {
+    if (hasOwnProperty.call(descriptor, 'value')) {
         descriptor.value = getValue(membrane, descriptor.value);
-    }
-    if (!isUndefined(get)) {
-        descriptor.get = function() {
-            return getValue(membrane, get.call(this));
-        };
-    }
-    if (!isUndefined(set)) {
-        descriptor.set = function(value) {
-            set.call(this, membrane.unwrapProxy(value));
-        };
+    } else {
+        if (!isUndefined(get)) {
+            descriptor.get = function() {
+                return getValue(membrane, get.call(this));
+            };
+        }
+        if (!isUndefined(set)) {
+            descriptor.set = function(value) {
+                set.call(this, membrane.unwrapProxy(value));
+            };
+        }
     }
     return descriptor;
 }

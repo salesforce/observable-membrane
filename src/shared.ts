@@ -10,6 +10,7 @@ const {
     getOwnPropertyNames,
     getOwnPropertySymbols,
     preventExtensions,
+    hasOwnProperty,
 } = Object;
 
 const {
@@ -32,6 +33,7 @@ export {
     getOwnPropertyNames,
     getOwnPropertySymbols,
     preventExtensions,
+    hasOwnProperty,
 };
 
 const OtS = {}.toString;

@@ -14,7 +14,7 @@ import {
     wrapDescriptor,
 } from './reactive-membrane';
 
-function getReadOnlyValue(membrane: ReactiveMembrane, value: any): any {
+function wrapReadOnlyValue(membrane: ReactiveMembrane, value: any): any {
     return membrane.valueIsObservable(value) ? membrane.getReadOnlyProxy(value) : value;
 }
 
@@ -86,7 +86,7 @@ export class ReadOnlyHandler {
         if (!isUndefined(shadowDescriptor)) {
             return shadowDescriptor;
         }
-        desc = wrapDescriptor(membrane, desc, getReadOnlyValue);
+        desc = wrapDescriptor(membrane, desc, wrapReadOnlyValue);
         delete desc.set; // readOnly membrane does not allow setters
         if (!desc.configurable) {
             // If descriptor from original target is not configurable,

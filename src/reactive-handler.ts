@@ -12,6 +12,7 @@ import {
     getOwnPropertyNames,
     getOwnPropertySymbols,
     preventExtensions,
+    hasOwnProperty,
 } from './shared';
 
 import {
@@ -20,14 +21,14 @@ import {
     wrapDescriptor,
 } from './reactive-membrane';
 
-function getWrappedValue(membrane: ReactiveMembrane, value: any): any {
+function wrapValue(membrane: ReactiveMembrane, value: any): any {
     return membrane.valueIsObservable(value) ? membrane.getProxy(value) : value;
 }
 
 // Unwrap property descriptors
 // We only need to unwrap if value is specified
 function unwrapDescriptor(descriptor: PropertyDescriptor): PropertyDescriptor {
-    if ('value' in descriptor) {
+    if (hasOwnProperty.call(descriptor, 'value')) {
         descriptor.value = unwrap(descriptor.value);
     }
     return descriptor;
@@ -44,7 +45,7 @@ function lockShadowTarget(membrane: ReactiveMembrane, shadowTarget: ReactiveMemb
         // could change sometime in the future, so we can defer wrapping
         // until we need to
         if (!descriptor.configurable) {
-            descriptor = wrapDescriptor(membrane, descriptor, getWrappedValue);
+            descriptor = wrapDescriptor(membrane, descriptor, wrapValue);
         }
         ObjectDefineProperty(shadowTarget, key, descriptor);
     });
@@ -146,7 +147,7 @@ export class ReactiveProxyHandler {
         if (!isUndefined(shadowDescriptor)) {
             return shadowDescriptor;
         }
-        desc = wrapDescriptor(membrane, desc, getWrappedValue);
+        desc = wrapDescriptor(membrane, desc, wrapValue);
         if (!desc.configurable) {
             // If descriptor from original target is not configurable,
             // We must copy the wrapped descriptor over to the shadow target.
@@ -175,13 +176,13 @@ export class ReactiveProxyHandler {
         // if the descriptor has a value, as opposed to getter/setter
         // So we can just check if writable is present and then see if
         // value is present. This eliminates getter and setter descriptors
-        if ('writable' in descriptor && !('value' in descriptor)) {
+        if (hasOwnProperty.call(descriptor, 'writable') && !hasOwnProperty.call(descriptor, 'value')) {
             const originalDescriptor = getOwnPropertyDescriptor(originalTarget, key) as PropertyDescriptor;
             descriptor.value = originalDescriptor.value;
         }
         ObjectDefineProperty(originalTarget, key, unwrapDescriptor(descriptor));
         if (configurable === false) {
-            ObjectDefineProperty(shadowTarget, key, wrapDescriptor(membrane, descriptor, getWrappedValue));
+            ObjectDefineProperty(shadowTarget, key, wrapDescriptor(membrane, descriptor, wrapValue));
         }
 
         valueMutated(originalTarget, key);
