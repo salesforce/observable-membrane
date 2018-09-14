@@ -68,6 +68,24 @@ const defaultValueMutated: ReactiveMembraneMutationCallback = (obj: any, key: Pr
 };
 const defaultValueDistortion: ReactiveMembraneDistortionCallback = (value: any) => value;
 
+export function wrapDescriptor(membrane: ReactiveMembrane, descriptor: PropertyDescriptor, getValue: (membrane: ReactiveMembrane, originalValue: any) => any): PropertyDescriptor {
+    const { set, get } = descriptor;
+    if ('value' in descriptor) {
+        descriptor.value = getValue(membrane, descriptor.value);
+    }
+    if (!isUndefined(get)) {
+        descriptor.get = function() {
+            return getValue(membrane, get.call(this));
+        };
+    }
+    if (!isUndefined(set)) {
+        descriptor.set = function(value) {
+            set.call(this, membrane.unwrapProxy(value));
+        };
+    }
+    return descriptor;
+}
+
 export class ReactiveMembrane {
     valueDistortion: ReactiveMembraneDistortionCallback = defaultValueDistortion;
     valueMutated: ReactiveMembraneMutationCallback = defaultValueMutated;
