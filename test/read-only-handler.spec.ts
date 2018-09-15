@@ -327,6 +327,32 @@ describe('ReadOnlyHandler', () => {
             }).toThrow();
             expect(get.call(proxy)).toEqual(0);
         });
+        it('should be reactive when descriptor is accessed', () => {
+            let observedTarget;
+            let observedKey;
+            const target = new ReactiveMembrane({
+                valueObserved(o, key) {
+                    observedTarget = o;
+                    observedKey = key;
+                }
+            });
+            const todos = {};
+            const observable = {};
+            Object.defineProperty(todos, 'foo', {
+                get() {
+                    return observable;
+                },
+                configurable: true
+            });
+            const expected = target.getProxy(observable);
+
+            const proxy = target.getProxy(todos);
+            expect(proxy.foo).toBe(expected);
+
+            const desc = Object.getOwnPropertyDescriptor(proxy, 'foo');
+            expect(observedKey).toBe('foo');
+            expect(observedTarget).toBe(todos);
+        });
     });
     it('should throw when attempting to change the prototype', function() {
         const target = new ReactiveMembrane();

@@ -147,6 +147,9 @@ export class ReactiveProxyHandler {
         if (!isUndefined(shadowDescriptor)) {
             return shadowDescriptor;
         }
+        // Note: by accessing the descriptor, the key is marked as observed
+        // but access to the value, setter or getter (if available) cannot observe
+        // mutations, just like regular methods, in which case we just do nothing.
         desc = wrapDescriptor(membrane, desc, wrapValue);
         if (!desc.configurable) {
             // If descriptor from original target is not configurable,

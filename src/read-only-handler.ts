@@ -86,8 +86,13 @@ export class ReadOnlyHandler {
         if (!isUndefined(shadowDescriptor)) {
             return shadowDescriptor;
         }
+        // Note: by accessing the descriptor, the key is marked as observed
+        // but access to the value or getter (if available) cannot be observed,
+        // just like regular methods, in which case we just do nothing.
         desc = wrapDescriptor(membrane, desc, wrapReadOnlyValue);
-        delete desc.set; // readOnly membrane does not allow setters
+        if (!isUndefined(desc.set)) {
+            desc.set = undefined; // readOnly membrane does not allow setters
+        }
         if (!desc.configurable) {
             // If descriptor from original target is not configurable,
             // We must copy the wrapped descriptor over to the shadow target.

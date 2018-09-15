@@ -76,12 +76,18 @@ export function wrapDescriptor(membrane: ReactiveMembrane, descriptor: PropertyD
     } else {
         if (!isUndefined(get)) {
             descriptor.get = function() {
-                return getValue(membrane, get.call(this));
+                // invoking the original getter with the original target
+                return getValue(membrane, get.call(unwrap(this)));
             };
         }
         if (!isUndefined(set)) {
             descriptor.set = function(value) {
-                set.call(this, membrane.unwrapProxy(value));
+                // At this point we don't have a clear indication of whether
+                // or not a valid mutation will occur, we don't have the key,
+                // and we are not sure why and how they are invoking this setter.
+                // Nevertheless we preserve the original semantics by invoking the
+                // original setter with the original target and the unwrapped value
+                set.call(unwrap(this), membrane.unwrapProxy(value));
             };
         }
     }
