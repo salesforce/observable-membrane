@@ -6,6 +6,7 @@ import {
     getOwnPropertyDescriptor,
     getOwnPropertyNames,
     getOwnPropertySymbols,
+    hasOwnProperty,
 } from './shared';
 
 import {
@@ -90,7 +91,7 @@ export class ReadOnlyHandler {
         // but access to the value or getter (if available) cannot be observed,
         // just like regular methods, in which case we just do nothing.
         desc = wrapDescriptor(membrane, desc, wrapReadOnlyValue);
-        if (!isUndefined(desc.set)) {
+        if (hasOwnProperty.call(desc, 'set')) {
             desc.set = undefined; // readOnly membrane does not allow setters
         }
         if (!desc.configurable) {
