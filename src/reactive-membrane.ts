@@ -6,6 +6,7 @@ import {
     isUndefined,
     getPrototypeOf,
     isFunction,
+    hasOwnProperty,
 } from './shared';
 import { ReactiveProxyHandler } from './reactive-handler';
 import { ReadOnlyHandler } from './read-only-handler';
@@ -67,6 +68,31 @@ const defaultValueMutated: ReactiveMembraneMutationCallback = (obj: any, key: Pr
     /* do nothing */
 };
 const defaultValueDistortion: ReactiveMembraneDistortionCallback = (value: any) => value;
+
+export function wrapDescriptor(membrane: ReactiveMembrane, descriptor: PropertyDescriptor, getValue: (membrane: ReactiveMembrane, originalValue: any) => any): PropertyDescriptor {
+    const { set, get } = descriptor;
+    if (hasOwnProperty.call(descriptor, 'value')) {
+        descriptor.value = getValue(membrane, descriptor.value);
+    } else {
+        if (!isUndefined(get)) {
+            descriptor.get = function() {
+                // invoking the original getter with the original target
+                return getValue(membrane, get.call(unwrap(this)));
+            };
+        }
+        if (!isUndefined(set)) {
+            descriptor.set = function(value) {
+                // At this point we don't have a clear indication of whether
+                // or not a valid mutation will occur, we don't have the key,
+                // and we are not sure why and how they are invoking this setter.
+                // Nevertheless we preserve the original semantics by invoking the
+                // original setter with the original target and the unwrapped value
+                set.call(unwrap(this), membrane.unwrapProxy(value));
+            };
+        }
+    }
+    return descriptor;
+}
 
 export class ReactiveMembrane {
     valueDistortion: ReactiveMembraneDistortionCallback = defaultValueDistortion;

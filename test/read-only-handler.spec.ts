@@ -271,7 +271,7 @@ describe('ReadOnlyHandler', () => {
             doNothing(readOnly.foo);
         }).not.toThrow();
     });
-    describe.skip('issue#20 - getOwnPropertyDescriptor', () => {
+    describe('issue #20 - getOwnPropertyDescriptor', () => {
         it('readonly proxy prevents mutation when value accessed via accessor descriptor', () => {
             const target = new ReactiveMembrane();
             const todos = {};
@@ -285,10 +285,10 @@ describe('ReadOnlyHandler', () => {
             const proxy = target.getReadOnlyProxy(todos);
             const desc = Object.getOwnPropertyDescriptor(proxy, 'entry');
             const { get } = desc;
-            expect(() => { 
+            expect(() => {
                 get().foo = '';
             }).toThrow();
-            expect(todos['entry'].foo).toEqual('bar');
+            expect(todos.entry.foo).toEqual('bar');
         });
         it('readonly proxy prevents mutation when value accessed via data descriptor', () => {
             const target = new ReactiveMembrane();
@@ -304,7 +304,54 @@ describe('ReadOnlyHandler', () => {
             expect( () => {
                 value.foo = '';
             }).toThrow();
-            expect(todos['entry'].foo).toEqual('bar');
+            expect(todos.entry.foo).toEqual('bar');
+        });
+        it('readonly proxy prevents access to any setter in descriptor', () => {
+            const target = new ReactiveMembrane();
+            const todos = {};
+            let value = 0;
+            Object.defineProperty(todos, 'entry', {
+                get() {
+                    return value;
+                },
+                set(v) {
+                    value = v;
+                },
+                configurable: true
+            });
+            const proxy = target.getReadOnlyProxy(todos);
+            const desc = Object.getOwnPropertyDescriptor(proxy, 'entry');
+            const { set, get } = desc;
+            expect(() => {
+                set.call(proxy, 1);
+            }).toThrow();
+            expect(get.call(proxy)).toEqual(0);
+        });
+        it('should be reactive when descriptor is accessed', () => {
+            let observedTarget;
+            let observedKey;
+            const target = new ReactiveMembrane({
+                valueObserved(o, key) {
+                    observedTarget = o;
+                    observedKey = key;
+                }
+            });
+            const todos = {};
+            const observable = {};
+            Object.defineProperty(todos, 'foo', {
+                get() {
+                    return observable;
+                },
+                configurable: true
+            });
+            const expected = target.getProxy(observable);
+
+            const proxy = target.getProxy(todos);
+            expect(proxy.foo).toBe(expected);
+
+            const desc = Object.getOwnPropertyDescriptor(proxy, 'foo');
+            expect(observedKey).toBe('foo');
+            expect(observedTarget).toBe(todos);
         });
     });
     it('should throw when attempting to change the prototype', function() {

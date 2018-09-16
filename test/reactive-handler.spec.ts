@@ -594,7 +594,7 @@ describe('ReactiveHandler', () => {
         expect(accessSpy).toHaveBeenLastCalledWith(obj.foo, 'bar');
     });
 
-    describe.skip('issue#20 - getOwnPropertyDescriptor', () => {
+    describe('issue #20 - getOwnPropertyDescriptor', () => {
         it('should return reactive proxy when property value accessed via accessor descriptor', () => {
             const target = new ReactiveMembrane();
             const todos = {};
@@ -631,5 +631,52 @@ describe('ReactiveHandler', () => {
             const { value } = desc;
             expect(value).toBe(expected);
         });
-    })
+        it('should allow set invocation via descriptor', () => {
+            const target = new ReactiveMembrane();
+            const todos = {};
+            let value = 0;
+            const newValue = {};
+            Object.defineProperty(todos, 'entry', {
+                get() {
+                    return value;
+                },
+                set(v) {
+                    value = v;
+                },
+                configurable: true
+            });
+            const proxy = target.getProxy(todos);
+            const desc = Object.getOwnPropertyDescriptor(proxy, 'entry');
+            const { set, get } = desc;
+            set.call(proxy, newValue);
+            expect(todos.entry).toEqual(newValue);
+            expect(proxy.entry).toEqual(get.call(proxy));
+        });
+        it('should be reactive when descriptor is accessed', () => {
+            let observedTarget;
+            let observedKey;
+            const target = new ReactiveMembrane({
+                valueObserved(o, key) {
+                    observedTarget = o;
+                    observedKey = key;
+                }
+            });
+            const todos = {};
+            const observable = {};
+            Object.defineProperty(todos, 'foo', {
+                get() {
+                    return observable;
+                },
+                configurable: true
+            });
+            const expected = target.getProxy(observable);
+
+            const proxy = target.getProxy(todos);
+            expect(proxy.foo).toBe(expected);
+
+            const desc = Object.getOwnPropertyDescriptor(proxy, 'foo');
+            expect(observedKey).toBe('foo');
+            expect(observedTarget).toBe(todos);
+        });
+    });
 });

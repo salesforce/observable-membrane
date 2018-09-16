@@ -6,18 +6,17 @@ import {
     getOwnPropertyDescriptor,
     getOwnPropertyNames,
     getOwnPropertySymbols,
+    hasOwnProperty,
 } from './shared';
 
 import {
     ReactiveMembrane,
     ReactiveMembraneShadowTarget,
+    wrapDescriptor,
 } from './reactive-membrane';
 
-function wrapDescriptor(membrane: ReactiveMembrane, descriptor: PropertyDescriptor): PropertyDescriptor {
-    if ('value' in descriptor) {
-        descriptor.value = membrane.valueIsObservable(descriptor.value) ? membrane.getReadOnlyProxy(descriptor.value) : descriptor.value;
-    }
-    return descriptor;
+function wrapReadOnlyValue(membrane: ReactiveMembrane, value: any): any {
+    return membrane.valueIsObservable(value) ? membrane.getReadOnlyProxy(value) : value;
 }
 
 export class ReadOnlyHandler {
@@ -85,16 +84,25 @@ export class ReadOnlyHandler {
             return desc;
         }
         const shadowDescriptor = getOwnPropertyDescriptor(shadowTarget, key);
-        if (!desc.configurable && !shadowDescriptor) {
+        if (!isUndefined(shadowDescriptor)) {
+            return shadowDescriptor;
+        }
+        // Note: by accessing the descriptor, the key is marked as observed
+        // but access to the value or getter (if available) cannot be observed,
+        // just like regular methods, in which case we just do nothing.
+        desc = wrapDescriptor(membrane, desc, wrapReadOnlyValue);
+        if (hasOwnProperty.call(desc, 'set')) {
+            desc.set = undefined; // readOnly membrane does not allow setters
+        }
+        if (!desc.configurable) {
             // If descriptor from original target is not configurable,
             // We must copy the wrapped descriptor over to the shadow target.
             // Otherwise, proxy will throw an invariant error.
             // This is our last chance to lock the value.
             // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy/handler/getOwnPropertyDescriptor#Invariants
-            desc = wrapDescriptor(membrane, desc);
             ObjectDefineProperty(shadowTarget, key, desc);
         }
-        return shadowDescriptor || desc;
+        return desc;
     }
     preventExtensions(shadowTarget: ReactiveMembraneShadowTarget): boolean {
         if (process.env.NODE_ENV !== 'production') {
