@@ -263,4 +263,4 @@ Please make sure to read the [Contributing Guide](CONTRIBUTING.md) before making
 
 [MIT](http://opensource.org/licenses/MIT)
 
-Copyright (C) 2017 salesforce.com, Inc.
+Copyright (C) 2019 salesforce.com, Inc.
