@@ -21,14 +21,15 @@ import {
     wrapDescriptor,
 } from './reactive-membrane';
 
-function wrapValue(membrane: ReactiveMembrane, value: any): any {
-    return membrane.valueIsObservable(value) ? membrane.getProxy(value) : value;
+function wrapValue(membrane: ReactiveMembrane, value: any, obj: any, key: PropertyKey): any {
+    return membrane.valueIsObservable(value, obj, key) ? membrane.getProxy(value, obj, key) : value;
 }
 
 // Unwrap property descriptors
 // We only need to unwrap if value is specified
 function unwrapDescriptor(descriptor: PropertyDescriptor): PropertyDescriptor {
     if (hasOwnProperty.call(descriptor, 'value')) {
+        // note that we do not support the reverse distortion
         descriptor.value = unwrap(descriptor.value);
     }
     return descriptor;
@@ -45,7 +46,7 @@ function lockShadowTarget(membrane: ReactiveMembrane, shadowTarget: ReactiveMemb
         // could change sometime in the future, so we can defer wrapping
         // until we need to
         if (!descriptor.configurable) {
-            descriptor = wrapDescriptor(membrane, descriptor, wrapValue);
+            descriptor = wrapDescriptor(membrane, descriptor, originalTarget, key, wrapValue);
         }
         ObjectDefineProperty(shadowTarget, key, descriptor);
     });
@@ -69,7 +70,7 @@ export class ReactiveProxyHandler {
         const value = originalTarget[key];
         const { valueObserved } = membrane;
         valueObserved(originalTarget, key);
-        return membrane.getProxy(value);
+        return membrane.getProxy(value, originalTarget, key);
     }
     set(shadowTarget: ReactiveMembraneShadowTarget, key: PropertyKey, value: any): boolean {
         const { originalTarget, membrane: { valueMutated } } = this;
@@ -150,7 +151,7 @@ export class ReactiveProxyHandler {
         // Note: by accessing the descriptor, the key is marked as observed
         // but access to the value, setter or getter (if available) cannot observe
         // mutations, just like regular methods, in which case we just do nothing.
-        desc = wrapDescriptor(membrane, desc, wrapValue);
+        desc = wrapDescriptor(membrane, desc, originalTarget, key, wrapValue);
         if (!desc.configurable) {
             // If descriptor from original target is not configurable,
             // We must copy the wrapped descriptor over to the shadow target.
@@ -185,7 +186,7 @@ export class ReactiveProxyHandler {
         }
         ObjectDefineProperty(originalTarget, key, unwrapDescriptor(descriptor));
         if (configurable === false) {
-            ObjectDefineProperty(shadowTarget, key, wrapDescriptor(membrane, descriptor, wrapValue));
+            ObjectDefineProperty(shadowTarget, key, wrapDescriptor(membrane, descriptor, originalTarget, key, wrapValue));
         }
 
         valueMutated(originalTarget, key);

@@ -15,8 +15,8 @@ import {
     wrapDescriptor,
 } from './reactive-membrane';
 
-function wrapReadOnlyValue(membrane: ReactiveMembrane, value: any): any {
-    return membrane.valueIsObservable(value) ? membrane.getReadOnlyProxy(value) : value;
+function wrapReadOnlyValue(membrane: ReactiveMembrane, value: any, obj: any, key: PropertyKey): any {
+    return membrane.valueIsObservable(value, obj, key) ? membrane.getReadOnlyProxy(value, obj, key) : value;
 }
 
 export class ReadOnlyHandler {
@@ -35,7 +35,7 @@ export class ReadOnlyHandler {
         const value = originalTarget[key];
         const { valueObserved } = membrane;
         valueObserved(originalTarget, key);
-        return membrane.getReadOnlyProxy(value);
+        return membrane.getReadOnlyProxy(value, originalTarget, key);
     }
     set(shadowTarget: ReactiveMembraneShadowTarget, key: PropertyKey, value: any): boolean {
         if (process.env.NODE_ENV !== 'production') {
@@ -90,7 +90,7 @@ export class ReadOnlyHandler {
         // Note: by accessing the descriptor, the key is marked as observed
         // but access to the value or getter (if available) cannot be observed,
         // just like regular methods, in which case we just do nothing.
-        desc = wrapDescriptor(membrane, desc, wrapReadOnlyValue);
+        desc = wrapDescriptor(membrane, desc, originalTarget, key, wrapReadOnlyValue);
         if (hasOwnProperty.call(desc, 'set')) {
             desc.set = undefined; // readOnly membrane does not allow setters
         }

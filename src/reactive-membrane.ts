@@ -26,8 +26,8 @@ export type ReactiveMembraneShadowTarget = object | any[];
 
 export type ReactiveMembraneAccessCallback = (obj: any, key: PropertyKey) => void;
 export type ReactiveMembraneMutationCallback = (obj: any, key: PropertyKey) => void;
-export type ReactiveMembraneDistortionCallback = (value: any) => any;
-export type ReactiveMembraneObservableCallback = (value: any) => boolean;
+export type ReactiveMembraneDistortionCallback = (value: any, obj: any, key: PropertyKey) => any;
+export type ReactiveMembraneObservableCallback = (value: any, obj: any, key: PropertyKey) => boolean;
 
 export interface ObservableMembraneInit {
     valueMutated?: ReactiveMembraneMutationCallback;
@@ -69,15 +69,16 @@ const defaultValueMutated: ReactiveMembraneMutationCallback = (obj: any, key: Pr
 };
 const defaultValueDistortion: ReactiveMembraneDistortionCallback = (value: any) => value;
 
-export function wrapDescriptor(membrane: ReactiveMembrane, descriptor: PropertyDescriptor, getValue: (membrane: ReactiveMembrane, originalValue: any) => any): PropertyDescriptor {
+export function wrapDescriptor(membrane: ReactiveMembrane, descriptor: PropertyDescriptor, obj: any, key: PropertyKey, getValue: (membrane: ReactiveMembrane, originalValue: any, o: any, k: PropertyKey) => any): PropertyDescriptor {
     const { set, get } = descriptor;
     if (hasOwnProperty.call(descriptor, 'value')) {
-        descriptor.value = getValue(membrane, descriptor.value);
+        descriptor.value = getValue(membrane, descriptor.value, obj, key);
     } else {
         if (!isUndefined(get)) {
             descriptor.get = function() {
+                const v = unwrap(this);
                 // invoking the original getter with the original target
-                return getValue(membrane, get.call(unwrap(this)));
+                return getValue(membrane, get.call(v), v, key);
             };
         }
         if (!isUndefined(set)) {
@@ -111,9 +112,9 @@ export class ReactiveMembrane {
         }
     }
 
-    getProxy(value: any) {
-        const distorted = this.valueDistortion(value);
-        if (this.valueIsObservable(distorted)) {
+    getProxy(value: any, obj: any, key: PropertyKey) {
+        const distorted = this.valueDistortion(value, obj, key);
+        if (this.valueIsObservable(distorted, obj, key)) {
             const o = this.getReactiveState(distorted);
             // when trying to extract the writable version of a readonly
             // we return the readonly.
@@ -122,9 +123,9 @@ export class ReactiveMembrane {
         return distorted;
     }
 
-    getReadOnlyProxy(value: any) {
-        const distorted = this.valueDistortion(value);
-        if (this.valueIsObservable(distorted)) {
+    getReadOnlyProxy(value: any, obj: any, key: PropertyKey) {
+        const distorted = this.valueDistortion(value, obj, key);
+        if (this.valueIsObservable(distorted, obj, key)) {
             return this.getReactiveState(distorted).readOnly;
         }
         return distorted;
