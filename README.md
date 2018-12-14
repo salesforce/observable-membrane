@@ -134,7 +134,7 @@ As described above, you can use distortions to avoid leaking non-observable obje
 import ObservableMembrane from 'observable-membrane';
 
 const membrane = new ObservableMembrane({
-    valueDistortion(value) {
+    valueDistortion(value, obj, key) {
         if (value instanceof Node) {
             throw new ReferenceError(`Invalid access to a non-observable Node`);
         }
@@ -142,6 +142,8 @@ const membrane = new ObservableMembrane({
         if (value === 1) {
             return 10;
         }
+        // additionally, you can use the second and third argument to narrow the
+        // distortion logic even more. Considering that obj[key] === value
         return value;
     },
 });
@@ -169,6 +171,27 @@ p.y.node;
 ```
 
 _Note: You could use a `WeakMap` to remap symbols to avoid leaking the original symbols and other non-observable objects through the distortion mechanism._
+
+_Note: By default, the distortion mechanism does nothing._
+
+#### Observables
+
+As described above, you can decide whether or not a value should be considered an observable objects, which means it must be wrapped by with a Proxy, e.g.:
+
+```js
+import ObservableMembrane from 'observable-membrane';
+
+const membrane = new ObservableMembrane({
+    valueIsObservable(value, obj, key) {
+        // any object is observable (wrapped) except for Node instances
+        return !(value instanceof Node) {
+        // additionally, you can use the second and third argument to narrow the
+        // logic even more, considering that obj[key] === value.
+    },
+});
+```
+
+_Note: By default, only POJOs (objects and arrays created from syntax) are considered observables._
 
 #### Unwrapping Proxies
 
@@ -210,7 +233,8 @@ Create a new membrane.
 * `config` [Object] [Optional] The membrane configuration
     * `valueObserved` [Function] [Optional] Callback invoked when an observed  property is accessed. This function receives as argument the original target and the property key.
     * `valueMutated` [Function] [Optional] Callback invoked when an observed property is mutated. This function receives as argument the original target and the property key.
-    * `valueDistortion` [Function] [Optional] Callback to apply distortion to the objects present in the object graph. This function receives as argument a newly added object in the object graph.
+    * `valueDistortion` [Function] [Optional] Callback to apply distortion to a value accessible from an object in the object graph. This function receives as arguments a value, an object and the property key from where the value was obtained.
+    * `valueIsObservable` [Function] [Optional] Callback to determine if a value accessible from an object in the object graph is observable or not. This function receives as arguments a value, an object and the property key from where the value was obtained.
 
 
 ### `ObservableMembrane.prototype.getProxy(object)`
