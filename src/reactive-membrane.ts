@@ -53,12 +53,23 @@ function defaultValueIsObservable(value: any): boolean {
     if (value == null) {
         return false;
     }
-    if (isArray(value)) {
-        return true;
-    }
 
-    const proto = getPrototypeOf(value);
-    return (proto === ObjectDotPrototype || proto === null || getPrototypeOf(proto) === null);
+    switch (typeof value) {
+        // Quicker decisions for non-observable types. All possible values of typeof https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/typeof#Description
+        case 'boolean':
+        case 'number':
+        case 'string':
+        case 'symbol':
+        case 'function':
+            return false;
+        default:
+            if (isArray(value)) {
+                return true;
+            }
+
+            const proto = getPrototypeOf(value);
+            return (proto === ObjectDotPrototype || proto === null || getPrototypeOf(proto) === null);
+    }
 }
 
 const defaultValueObserved: ReactiveMembraneAccessCallback = (obj: any, key: PropertyKey) => {
