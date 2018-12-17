@@ -372,4 +372,23 @@ describe('ReadOnlyHandler', () => {
             Object.setPrototypeOf(property.foo, {});
         }).toThrow();
     });
+
+    describe('should never wrap intrinsic prototypes', () => {
+        let membraneWithDefaults;
+        beforeAll(() => {
+            membraneWithDefaults = new ReactiveMembrane();
+        });
+
+        it('accessing proto of object should return Object.prototype', () => {
+            const obj = {};
+            const wet = membraneWithDefaults.getReadOnlyProxy(obj);
+            expect(wet.__proto__).toBe(Object.prototype);
+        })
+
+        it('accessing proto of array should return Array.prototype', () => {
+            const arr = [];
+            const wet = membraneWithDefaults.getReadOnlyProxy(arr);
+            expect(wet.__proto__).toBe(Array.prototype);
+        })    
+    });
 });

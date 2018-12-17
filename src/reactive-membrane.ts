@@ -47,12 +47,19 @@ function createShadowTarget(value: any): ReactiveMembraneShadowTarget {
 }
 
 const ObjectDotPrototype = Object.prototype;
+const ArrayDotPrototype = Array.prototype;
 
 function defaultValueIsObservable(value: any): boolean {
     // intentionally checking for null and undefined
-    if (value == null) {
+    if (value === null || isUndefined(value)) {
         return false;
     }
+
+    // escape hatch for intrinsics, else these will be false positives under the checks below
+    if (value === ObjectDotPrototype || value === ArrayDotPrototype) {
+        return false;
+    }
+
     if (isArray(value)) {
         return true;
     }

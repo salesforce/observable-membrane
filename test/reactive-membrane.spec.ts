@@ -41,3 +41,22 @@ describe('constructor', () => {
         expect(wet.source).toBe("fooBar");
     });
 });
+
+describe('Does not wrap non-observables', () => {
+    let membrane;
+    beforeEach(() => {
+        membrane = new ReactiveMembrane();
+    });
+
+    it('should not wrap or distort Object.prototype', () => {
+        const ObjectDotPrototype = Object.prototype;
+        expect(membrane.getProxy(ObjectDotPrototype)).toBe(ObjectDotPrototype);
+        expect(membrane.getReadOnlyProxy(ObjectDotPrototype)).toBe(ObjectDotPrototype);
+    });
+
+    it('should not wrap or distort Array.prototype', () => {
+        const ArrayDotPrototye =  Array.prototype;
+        expect(membrane.getProxy(ArrayDotPrototye)).toBe(ArrayDotPrototye);
+        expect(membrane.getReadOnlyProxy(ArrayDotPrototye)).toBe(ArrayDotPrototye);
+    });
+});
