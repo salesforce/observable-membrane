@@ -34,7 +34,7 @@
     "changelog:publish": "git add CHANGELOG.md && git commit -m 'docs(changelog): publish release changelog' && git push"
   },
   "devDependencies": {
-    "@types/jest": "~23.0.0",
+    "@types/jest": "~23.1.0",
     "@types/node": "8.9.4",
     "babel-minify": "0.4.3",
     "conventional-changelog-cli": "^2.0.1",

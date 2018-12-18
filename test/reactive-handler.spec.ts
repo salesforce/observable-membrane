@@ -67,22 +67,6 @@ describe('ReactiveHandler', () => {
         expect(first.x).toBe(second.x);
         expect(first).toBe(second);
     });
-    it('should not try to make date object reactive', function() {
-        const date = new Date();
-        const target = new ReactiveMembrane();
-
-        const state = target.getProxy({});
-        state.date = date;
-        expect(state.date).toBe(date);
-    });
-    it('should not try to make inherited object reactive', function() {
-        const foo = Object.create({});
-        const target = new ReactiveMembrane();
-
-        const state = target.getProxy({});
-        state.foo = foo;
-        expect(state.foo).toBe(foo);
-    });
     it('should never rewrap a previously produced proxy', () => {
         const o = { x: 1 };
         const target = new ReactiveMembrane();
@@ -677,6 +661,141 @@ describe('ReactiveHandler', () => {
             const desc = Object.getOwnPropertyDescriptor(proxy, 'foo');
             expect(observedKey).toBe('foo');
             expect(observedTarget).toBe(todos);
+        });
+    });
+
+    describe('values that do not need to be wrapped', () => {
+        let target;
+        beforeAll(() => {
+            target = new ReactiveMembrane();
+        });
+        it('should not try to make date object reactive', () => {
+            const date = new Date();
+
+            const state = target.getProxy({});
+            state.date = date;
+            expect(state.date).toBe(date);
+        });
+        it('should not try to make inherited object reactive', () => {
+            const foo = Object.create({});
+
+            const state = target.getProxy({});
+            state.foo = foo;
+            expect(state.foo).toBe(foo);
+        });
+        it.each(
+            [undefined, null, 'foo', true, false, 1, Symbol(), () => {}]
+            )('should not treat following value as reactive: %s', (value) => {
+            expect(target.getProxy(value)).toBe(value);
+        })
+    });
+
+    describe('handles array type values', () => {
+        let defaultMembrane;
+        beforeAll(() => {
+            defaultMembrane = new ReactiveMembrane();
+        });
+        it('wraps array', () => {
+            const value = []
+            const proxy = defaultMembrane.getProxy(value);
+            expect(proxy).not.toBe(value);
+            expect(defaultMembrane.unwrapProxy(value)).toBe(value);
+        });
+        it('access items in array', () => {
+            const value = ['foo', 'bar'];
+            const proxy = defaultMembrane.getProxy(value);
+            expect(Array.isArray(proxy)).toBe(true);
+            expect(proxy.length).toBe(2);
+            expect(proxy[0]).toBe('foo');
+            expect(proxy[1]).toBe('bar');
+        });
+        it('should notify when values accessed', () => {
+            const value = ['foo', {nested: 'bar'}];
+            const accessSpy = jest.fn();
+            const observedMembrane = new ReactiveMembrane({
+                valueObserved: accessSpy,
+            });
+    
+            const proxy = observedMembrane.getProxy(value);
+            doNothing(proxy[0]);
+            doNothing(proxy[1]);
+            expect(accessSpy).toHaveBeenCalledTimes(2);
+            expect(accessSpy).toHaveBeenCalledWith(value, '0');
+            expect(accessSpy).toHaveBeenCalledWith(value, '1');
+        });
+
+        describe('access values in array', () => {
+            let membrane;
+            const accessSpy = jest.fn();
+            const changeSpy = jest.fn();
+            beforeAll(() => {
+                membrane = new ReactiveMembrane({
+                    valueObserved: accessSpy,
+                    valueMutated: changeSpy
+                });
+            });
+            afterEach(() => {
+                accessSpy.mockClear();
+                changeSpy.mockClear();
+            });
+            it('entries() works on wrapped array', () => {
+                const value = ['foo', 'bar'];
+                const proxy = membrane.getProxy(value);
+                const entries = proxy.entries();
+                expect(entries.next().value).toEqual([0, 'foo']);
+                expect(entries.next().value).toEqual([1, 'bar']);
+                expect(entries.next().done).toBe(true);
+                // 6 invocations: 1 time for .entries, 3 times for entries.next() and 2 times for actually accessing the index value
+                expect(accessSpy).toHaveBeenCalledTimes(6);
+                expect(changeSpy).toHaveBeenCalledTimes(0);
+            });
+            it('concat() does not notify a mutation', () => {
+                const value = ['foo', 'bar'];
+                const proxy = membrane.getProxy(value);
+                const actual = proxy.concat(['baz']);
+                //  May be there is some optimization we can do here? Does valueObserved need to be called so many times?
+                // expect(accessSpy).toHaveBeenCalledTimes(8);
+                expect(actual).toEqual(['foo', 'bar', 'baz']);
+                expect(changeSpy).toHaveBeenCalledTimes(0);
+            });
+            it('indexof() does not notify a mutation', () => {
+                const value = ['foo', 'bar'];
+                const proxy = membrane.getProxy(value);
+                expect(proxy.indexOf('bar')).toBe(1);
+                // Another example of excessive notification, does indexOf() need to call valueObserved()?
+                expect(accessSpy).toHaveBeenCalledTimes(6);
+                expect(changeSpy).toHaveBeenCalledTimes(0);
+            });
+        });
+        describe('should be notified on array mutation', () => {
+            let membrane;
+            const changeSpy = jest.fn();
+
+            beforeAll(() => {
+                membrane = new ReactiveMembrane({
+                    valueMutated: changeSpy
+                });
+            });
+            afterEach(() => {
+                changeSpy.mockClear();
+            });
+            it('should notify when value is changed by index', () => {
+                const value = ['foo', 'bar'];
+                const proxy = membrane.getProxy(value);
+                proxy[1] = 'baz';
+                expect(proxy[1]).toBe('baz');
+                expect(changeSpy).toHaveBeenCalledTimes(1);
+                expect(changeSpy).toHaveBeenCalledWith(value, '1');
+            });
+            it('should notify on pop()', () => {
+                const value = ['foo', 'bar'];
+                const proxy = membrane.getProxy(value);
+                debugger;
+                expect(proxy.pop()).toBe('bar');
+                expect(changeSpy).toHaveBeenCalledTimes(2);
+                expect(changeSpy).toHaveBeenCalledWith(value, 'length');
+                expect(changeSpy).toHaveBeenCalledWith(value, '1');
+            });
         });
     });
 });
