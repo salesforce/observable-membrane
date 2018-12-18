@@ -49,27 +49,22 @@ function createShadowTarget(value: any): ReactiveMembraneShadowTarget {
 const ObjectDotPrototype = Object.prototype;
 
 function defaultValueIsObservable(value: any): boolean {
-    // intentionally checking for null and undefined
-    if (value == null) {
+    // intentionally checking for null
+    if (value === null) {
         return false;
     }
 
-    switch (typeof value) {
-        // Quicker decisions for non-observable types. All possible values of typeof https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/typeof#Description
-        case 'boolean':
-        case 'number':
-        case 'string':
-        case 'symbol':
-        case 'function':
-            return false;
-        default:
-            if (isArray(value)) {
-                return true;
-            }
-
-            const proto = getPrototypeOf(value);
-            return (proto === ObjectDotPrototype || proto === null || getPrototypeOf(proto) === null);
+    // treat all non-object types, including undefined, as non-observable values
+    if (typeof value !== 'object') {
+        return false;
     }
+
+    if (isArray(value)) {
+        return true;
+    }
+
+    const proto = getPrototypeOf(value);
+    return (proto === ObjectDotPrototype || proto === null || getPrototypeOf(proto) === null);
 }
 
 const defaultValueObserved: ReactiveMembraneAccessCallback = (obj: any, key: PropertyKey) => {
