@@ -676,7 +676,7 @@ describe('ReactiveHandler', () => {
             state.date = date;
             expect(state.date).toBe(date);
         });
-        it('should not try to make inherited object reactive', () => {
+        it('should not try to object with non-standard prototype reactive', () => {
             const foo = Object.create({});
 
             const state = target.getProxy({});
@@ -726,17 +726,15 @@ describe('ReactiveHandler', () => {
 
         describe('access values in array', () => {
             let membrane;
-            const accessSpy = jest.fn();
-            const changeSpy = jest.fn();
-            beforeAll(() => {
+            let accessSpy;
+            let changeSpy;
+            beforeEach(() => {
+                accessSpy = jest.fn();
+                changeSpy = jest.fn();
                 membrane = new ReactiveMembrane({
                     valueObserved: accessSpy,
                     valueMutated: changeSpy
                 });
-            });
-            afterEach(() => {
-                accessSpy.mockClear();
-                changeSpy.mockClear();
             });
             it('entries() works on wrapped array', () => {
                 const value = ['foo', 'bar'];
@@ -753,16 +751,14 @@ describe('ReactiveHandler', () => {
                 const value = ['foo', 'bar'];
                 const proxy = membrane.getProxy(value);
                 const actual = proxy.concat(['baz']);
-                //  May be there is some optimization we can do here? Does valueObserved need to be called so many times?
-                // expect(accessSpy).toHaveBeenCalledTimes(8);
+                expect(accessSpy).toHaveBeenCalledTimes(8);
                 expect(actual).toEqual(['foo', 'bar', 'baz']);
                 expect(changeSpy).toHaveBeenCalledTimes(0);
             });
-            it('indexof() does not notify a mutation', () => {
+            it('indexOf() does not notify a mutation', () => {
                 const value = ['foo', 'bar'];
                 const proxy = membrane.getProxy(value);
                 expect(proxy.indexOf('bar')).toBe(1);
-                // Another example of excessive notification, does indexOf() need to call valueObserved()?
                 expect(accessSpy).toHaveBeenCalledTimes(6);
                 expect(changeSpy).toHaveBeenCalledTimes(0);
             });
