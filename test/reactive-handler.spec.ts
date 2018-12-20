@@ -666,7 +666,7 @@ describe('ReactiveHandler', () => {
 
     describe('values that do not need to be wrapped', () => {
         let target;
-        beforeAll(() => {
+        beforeEach(() => {
             target = new ReactiveMembrane();
         });
         it('should not try to make date object reactive', () => {
@@ -692,7 +692,7 @@ describe('ReactiveHandler', () => {
 
     describe('handles array type values', () => {
         let defaultMembrane;
-        beforeAll(() => {
+        beforeEach(() => {
             defaultMembrane = new ReactiveMembrane();
         });
         it('wraps array', () => {
@@ -765,15 +765,12 @@ describe('ReactiveHandler', () => {
         });
         describe('should be notified on array mutation', () => {
             let membrane;
-            const changeSpy = jest.fn();
-
-            beforeAll(() => {
+            let changeSpy;
+            beforeEach(() => {
+                changeSpy = jest.fn();
                 membrane = new ReactiveMembrane({
                     valueMutated: changeSpy
                 });
-            });
-            afterEach(() => {
-                changeSpy.mockClear();
             });
             it('should notify when value is changed by index', () => {
                 const value = ['foo', 'bar'];
