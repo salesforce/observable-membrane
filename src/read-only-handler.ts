@@ -42,7 +42,11 @@ export class ReadOnlyHandler {
             const { originalTarget } = this;
             throw new Error(`Invalid mutation: Cannot set "${key.toString()}" on "${originalTarget}". "${originalTarget}" is read-only.`);
         }
-        return false;
+
+        // JSC doesn't throw a type Error when the set handler returns false. Let's throw in the handler to be
+        // consistent with the rest of the engines.
+        // https://bugs.webkit.org/show_bug.cgi?id=177398
+        throw new TypeError('Invalid mutation on readonly proxy.');
     }
     deleteProperty(shadowTarget: ReactiveMembraneShadowTarget, key: PropertyKey): boolean {
         if (process.env.NODE_ENV !== 'production') {
