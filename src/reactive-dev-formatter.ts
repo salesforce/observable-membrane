@@ -69,8 +69,8 @@ function getGlobal(): any {
     // the only reliable means to get the global object is `Function('return this')()`
     // However, this causes CSP violations in Chrome apps.
     if (typeof self !== 'undefined') { return self; }
-    else if (typeof window !== 'undefined') { return window; }
-    else if (typeof global !== 'undefined') { return global; }
+    if (typeof window !== 'undefined') { return window; }
+    if (typeof global !== 'undefined') { return global; }
 
     // Gracefully degrade if not able to locate the global object
     return {};
