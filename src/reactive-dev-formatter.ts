@@ -63,12 +63,14 @@ const formatter: DevToolFormatter = {
     }
 };
 
+// Inspired from paulmillr/es6-shim
+// https://github.com/paulmillr/es6-shim/blob/master/es6-shim.js#L176-L185
 function getGlobal(): any {
     // the only reliable means to get the global object is `Function('return this')()`
     // However, this causes CSP violations in Chrome apps.
     if (typeof self !== 'undefined') { return self; }
-    if (typeof window !== 'undefined') { return window; }
-    if (typeof global !== 'undefined') { return global; }
+    else if (typeof window !== 'undefined') { return window; }
+    else if (typeof global !== 'undefined') { return global; }
 
     // Gracefully degrade if not able to locate the global object
     return {};
