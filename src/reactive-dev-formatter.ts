@@ -9,7 +9,7 @@ import {
     getOwnPropertySymbols,
 } from './shared';
 
-// Define globalThis here since it's not current defined in by typescript.
+// Define globalThis since it's not current defined in by typescript.
 // https://github.com/tc39/proposal-global
 declare var globalThis: any;
 
