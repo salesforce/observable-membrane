@@ -9,14 +9,14 @@ import {
     getOwnPropertySymbols,
 } from './shared';
 
+// Define globalThis since it's not current defined in by typescript.
+// https://github.com/tc39/proposal-global
+declare var globalThis: any;
+
 interface DevToolFormatter {
     header: (object: any, config: any) => any;
     hasBody: (object: any, config: any) => boolean | null;
     body: (object: any, config: any) => any;
-}
-
-interface DevWindow extends Window {
-    devtoolsFormatters: DevToolFormatter[];
 }
 
 function getTarget(item: any) {
@@ -67,18 +67,33 @@ const formatter: DevToolFormatter = {
     }
 };
 
+// Inspired from paulmillr/es6-shim
+// https://github.com/paulmillr/es6-shim/blob/master/es6-shim.js#L176-L185
+function getGlobal(): any {
+    // the only reliable means to get the global object is `Function('return this')()`
+    // However, this causes CSP violations in Chrome apps.
+    if (typeof globalThis !== 'undefined') { return globalThis; }
+    if (typeof self !== 'undefined') { return self; }
+    if (typeof window !== 'undefined') { return window; }
+    if (typeof global !== 'undefined') { return global; }
+
+    // Gracefully degrade if not able to locate the global object
+    return {};
+}
+
 export function init() {
     if (process.env.NODE_ENV === 'production') {
         // this method should never leak to prod
         throw new ReferenceError();
     }
-    // Custom Formatter for Dev Tools
-    // To enable this, open Chrome Dev Tools
-    // Go to Settings,
-    // Under console, select "Enable custom formatters"
+
+    const global = getGlobal();
+
+    // Custom Formatter for Dev Tools. To enable this, open Chrome Dev Tools
+    //  - Go to Settings,
+    //  - Under console, select "Enable custom formatters"
     // For more information, https://docs.google.com/document/d/1FTascZXT9cxfetuPRT2eXPQKXui4nWFivUnS_335T3U/preview
-    const devWindow = (window as DevWindow);
-    const devtoolsFormatters = devWindow.devtoolsFormatters || [];
+    const devtoolsFormatters = global.devtoolsFormatters || [];
     ArrayPush.call(devtoolsFormatters, formatter);
-    devWindow.devtoolsFormatters = devtoolsFormatters;
+    global.devtoolsFormatters = devtoolsFormatters;
 }
