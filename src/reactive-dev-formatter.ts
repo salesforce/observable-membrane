@@ -9,6 +9,10 @@ import {
     getOwnPropertySymbols,
 } from './shared';
 
+// Define globalThis here since it's not current defined in by typescript.
+// https://github.com/tc39/proposal-global
+declare var globalThis: any;
+
 interface DevToolFormatter {
     header: (object: any, config: any) => any;
     hasBody: (object: any, config: any) => boolean | null;
@@ -68,6 +72,7 @@ const formatter: DevToolFormatter = {
 function getGlobal(): any {
     // the only reliable means to get the global object is `Function('return this')()`
     // However, this causes CSP violations in Chrome apps.
+    if (typeof globalThis !== 'undefined') { return globalThis; }
     if (typeof self !== 'undefined') { return self; }
     if (typeof window !== 'undefined') { return window; }
     if (typeof global !== 'undefined') { return global; }
