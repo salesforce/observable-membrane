@@ -14,7 +14,6 @@ describe('reactive dev formatter', function() {
         const el = document.createElement('div');
         const reactiveMembrane = new ReactiveMembrane();
         const proxy = reactiveMembrane.getProxy({ foo: 'bar', el });
-        debugger;
         const result = (window as any).devtoolsFormatters[0].header(proxy);
         expect(result).toEqual([
             'object', {

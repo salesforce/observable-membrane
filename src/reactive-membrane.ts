@@ -119,14 +119,13 @@ export class ReactiveMembrane {
     }
 
     getProxy(value: any) {
-        const originalValue = value;
-        value = unwrap(value);
-        const distorted = this.valueDistortion(value);
+        const unwrappedValue = unwrap(value);
+        const distorted = this.valueDistortion(unwrappedValue);
         if (this.valueIsObservable(distorted)) {
-            const o = this.getReactiveState(value, distorted);
+            const o = this.getReactiveState(unwrappedValue, distorted);
             // when trying to extract the writable version of a readonly
             // we return the readonly.
-            return o.readOnly === originalValue ? originalValue : o.reactive;
+            return o.readOnly === value ? value : o.reactive;
         }
         return distorted;
     }
