@@ -228,6 +228,7 @@ describe('ReadOnlyHandler', () => {
         const target = new ReactiveMembrane();
         const obj = { foo: 'bar' };
 
+        debugger;
         const readOnly = target.getReadOnlyProxy(obj);
         const writeAndRead = target.getProxy(readOnly);
         expect(() => {
