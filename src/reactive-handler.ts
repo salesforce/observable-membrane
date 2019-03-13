@@ -1,7 +1,6 @@
 import {
     toString,
     isUndefined,
-    TargetSlot,
     unwrap,
     ArrayConcat,
     isArray,
@@ -25,8 +24,11 @@ function wrapValue(membrane: ReactiveMembrane, value: any): any {
     return membrane.valueIsObservable(value) ? membrane.getProxy(value) : value;
 }
 
-// Unwrap property descriptors
-// We only need to unwrap if value is specified
+/**
+ * Unwrap property descriptors will set value on original descriptor
+ * We only need to unwrap if value is specified
+ * @param descriptor external descrpitor provided to define new property on original value
+ */
 function unwrapDescriptor(descriptor: PropertyDescriptor): PropertyDescriptor {
     if (hasOwnProperty.call(descriptor, 'value')) {
         descriptor.value = unwrap(descriptor.value);
@@ -63,9 +65,6 @@ export class ReactiveProxyHandler {
     }
     get(shadowTarget: ReactiveMembraneShadowTarget, key: PropertyKey): any {
         const { originalTarget, membrane } = this;
-        if (key === TargetSlot) {
-            return originalTarget;
-        }
         const value = originalTarget[key];
         const { valueObserved } = membrane;
         valueObserved(originalTarget, key);

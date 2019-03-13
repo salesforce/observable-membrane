@@ -1,6 +1,5 @@
 import {
     isUndefined,
-    TargetSlot,
     ArrayConcat,
     ObjectDefineProperty,
     getOwnPropertyDescriptor,
@@ -29,9 +28,6 @@ export class ReadOnlyHandler {
     }
     get(shadowTarget: ReactiveMembraneShadowTarget, key: PropertyKey): any {
         const { membrane, originalTarget } = this;
-        if (key === TargetSlot) {
-            return originalTarget;
-        }
         const value = originalTarget[key];
         const { valueObserved } = membrane;
         valueObserved(originalTarget, key);

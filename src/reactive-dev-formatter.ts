@@ -1,5 +1,4 @@
 import {
-    TargetSlot,
     ArrayPush,
     ArrayConcat,
     isArray,
@@ -7,6 +6,7 @@ import {
     getPrototypeOf,
     getOwnPropertyNames,
     getOwnPropertySymbols,
+    unwrap
 } from './shared';
 
 // Define globalThis since it's not current defined in by typescript.
@@ -19,15 +19,11 @@ interface DevToolFormatter {
     body: (object: any, config: any) => any;
 }
 
-function getTarget(item: any) {
-    return item && item[TargetSlot];
-}
-
 function extract(objectOrArray: any): any {
     if (isArray(objectOrArray)) {
         return objectOrArray.map((item) => {
-            const original = getTarget(item);
-            if (original) {
+            const original = unwrap(item);
+            if (original !== item) {
                 return extract(original);
             }
             return item;
@@ -39,8 +35,8 @@ function extract(objectOrArray: any): any {
     return ArrayConcat.call(names, getOwnPropertySymbols(objectOrArray))
         .reduce((seed: any, key: PropertyKey) => {
             const item = objectOrArray[key];
-            const original = getTarget(item);
-            if (original) {
+            const original = unwrap(item);
+            if (original !== item) {
                 seed[key] = extract(original);
             } else {
                 seed[key] = item;
@@ -51,8 +47,9 @@ function extract(objectOrArray: any): any {
 
 const formatter: DevToolFormatter = {
     header: (plainOrProxy) => {
-        const originalTarget = plainOrProxy[TargetSlot];
-        if (!originalTarget) {
+        const originalTarget = unwrap(plainOrProxy);
+        // if originalTarget is falsy or not unwrappable, exit
+        if (!originalTarget || originalTarget === plainOrProxy) {
             return null;
         }
 

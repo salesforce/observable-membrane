@@ -55,17 +55,14 @@ export function isFunction(obj: any): obj is Function {
     return typeof obj === 'function';
 }
 
-export const TargetSlot = Symbol();
-
-// TODO: we are using a funky and leaky abstraction here to try to identify if
-// the proxy is a compat proxy, and define the unwrap method accordingly.
-// @ts-ignore
-const { getKey } = Proxy;
-
-export const unwrap = getKey ?
-    (replicaOrAny: any): any => (replicaOrAny && getKey(replicaOrAny, TargetSlot)) || replicaOrAny
-    : (replicaOrAny: any): any => (replicaOrAny && replicaOrAny[TargetSlot]) || replicaOrAny;
-
 export function isObject(obj: any): obj is object {
     return typeof obj === 'object';
 }
+
+const proxyToValueMap: WeakMap<object, any> = new WeakMap();
+
+export function registerProxy(proxy: object, value: any) {
+    proxyToValueMap.set(proxy, value);
+}
+
+export const unwrap = (replicaOrAny: any): any => proxyToValueMap.get(replicaOrAny) || replicaOrAny;
