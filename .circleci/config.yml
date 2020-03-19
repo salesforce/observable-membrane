@@ -4,7 +4,7 @@ jobs:
     working_directory: ~/observable-membrane
 
     docker:
-      - image: circleci/node:8.11.3-stretch-browsers
+      - image: circleci/node:lts
 
     steps:
       - checkout
