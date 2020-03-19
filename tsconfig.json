@@ -7,7 +7,7 @@
     "declarationDir": "dist/types",
 
     // Environment Configuration
-    "experimentalDecorators": true,
+    "esModuleInterop": true,
     "moduleResolution": "node",
     "lib": ["es2015", "es2016", "dom"],
 
@@ -19,5 +19,8 @@
   },
   "include": [
     "src"
+  ],
+  "exclude": [
+    "test"
   ]
 }

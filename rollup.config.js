@@ -1,9 +1,9 @@
-"use strict";
+'use strict';
 
 const path = require('path');
-const replace = require('rollup-plugin-replace');
+const replace = require('@rollup/plugin-replace');
 const { terser } = require('rollup-plugin-terser');
-const typescript = require('rollup-plugin-typescript');
+const typescript = require('@rollup/plugin-typescript');
 
 const { version } = require('./package.json');
 
@@ -21,7 +21,12 @@ function rollupConfig({ formats, prod }) {
     const replaceToken = JSON.stringify(prod ? 'production' : 'development');
 
     const plugins = [
-        typescript({ typescript: require('typescript') }),
+        typescript({
+            tsconfig: false,
+            target: 'es2016',
+            exclude: ['test/*'],
+            typescript: require('typescript')
+        }),
         prod !== undefined && replace({ 'process.env.NODE_ENV': replaceToken }),
         prod && terser()
     ].filter(Boolean);
@@ -35,11 +40,20 @@ function rollupConfig({ formats, prod }) {
             format,
             banner,
             footer,
-            file: path.join(targetDirectory, targetName),
-        }
+            file: path.join(targetDirectory, targetName)
+        };
     });
 
-    return { input, output, plugins };
+    return {
+        input,
+        output,
+        plugins,
+        onwarn: (msg, warn) => {
+            if (!/Circular/.test(msg)) {
+                warn(msg);
+            }
+        }
+    };
 }
 
 module.exports = [
