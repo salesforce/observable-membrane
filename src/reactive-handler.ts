@@ -71,8 +71,16 @@ export class ReactiveProxyHandler {
         return membrane.getProxy(value);
     }
     set(shadowTarget: ReactiveMembraneShadowTarget, key: PropertyKey, value: any): boolean {
-        const { originalTarget, membrane: { valueMutated } } = this;
+        const { originalTarget, membrane: { valueMutated, valueIsObservable, unwrapProxy } } = this;
         const oldValue = originalTarget[key];
+        if (isArray(originalTarget) && valueIsObservable(value) && originalTarget.includes(unwrapProxy(value))) {
+            // fix issue #44 using array methods that re-assign indexes
+            // like (splice, shift, unshift, sort, reverse)
+            // will get() re-assigned items wrapped with proxy.
+            // So it will replace originalTarget items with proxies.
+            // This to unwrap those proxies and assign the original value.
+            value = unwrapProxy(value);
+        }
         if (oldValue !== value) {
             originalTarget[key] = value;
             valueMutated(originalTarget, key);
