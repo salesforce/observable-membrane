@@ -1,7 +1,6 @@
 import {
     toString,
     isUndefined,
-    unwrap,
     ArrayConcat,
     isArray,
     ObjectDefineProperty,
@@ -29,9 +28,9 @@ function wrapValue(membrane: ReactiveMembrane, value: any): any {
  * We only need to unwrap if value is specified
  * @param descriptor external descrpitor provided to define new property on original value
  */
-function unwrapDescriptor(descriptor: PropertyDescriptor): PropertyDescriptor {
+function unwrapDescriptor(membrane: ReactiveMembrane, descriptor: PropertyDescriptor): PropertyDescriptor {
     if (hasOwnProperty.call(descriptor, 'value')) {
-        descriptor.value = unwrap(descriptor.value);
+        descriptor.value = membrane.unwrapProxy(descriptor.value);
     }
     return descriptor;
 }
@@ -71,16 +70,10 @@ export class ReactiveProxyHandler {
         return membrane.getProxy(value);
     }
     set(shadowTarget: ReactiveMembraneShadowTarget, key: PropertyKey, value: any): boolean {
-        const { originalTarget, membrane: { valueMutated, valueIsObservable, unwrapProxy } } = this;
+        const { originalTarget, membrane } = this;
         const oldValue = originalTarget[key];
-        if (isArray(originalTarget) && valueIsObservable(value) && originalTarget.includes(unwrapProxy(value))) {
-            // fix issue #44 using array methods that re-assign indexes
-            // like (splice, shift, unshift, sort, reverse)
-            // will get() re-assigned items wrapped with proxy.
-            // So it will replace originalTarget items with proxies.
-            // This to unwrap those proxies and assign the original value.
-            value = unwrapProxy(value);
-        }
+        const { valueMutated } = membrane;
+        value = membrane.unwrapProxy(value);
         if (oldValue !== value) {
             originalTarget[key] = value;
             valueMutated(originalTarget, key);
@@ -190,7 +183,7 @@ export class ReactiveProxyHandler {
             const originalDescriptor = getOwnPropertyDescriptor(originalTarget, key) as PropertyDescriptor;
             descriptor.value = originalDescriptor.value;
         }
-        ObjectDefineProperty(originalTarget, key, unwrapDescriptor(descriptor));
+        ObjectDefineProperty(originalTarget, key, unwrapDescriptor(membrane, descriptor));
         if (configurable === false) {
             ObjectDefineProperty(shadowTarget, key, wrapDescriptor(membrane, descriptor, wrapValue));
         }

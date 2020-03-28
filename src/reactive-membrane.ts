@@ -140,7 +140,13 @@ export class ReactiveMembrane {
     }
 
     unwrapProxy(p: any) {
-        return unwrap(p);
+        const unwrapped = unwrap(p);
+        const distorted = this.valueDistortion(unwrapped);
+        const reactiveState = this.objectGraph.get(distorted);
+        if (reactiveState && reactiveState.readOnly === p) {
+            return p;
+        }
+        return distorted;
     }
 
     private getReactiveState(value: any, distortedValue: any): ReactiveState {
