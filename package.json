@@ -37,14 +37,14 @@
     "@rollup/plugin-replace": "^2.3.2",
     "@rollup/plugin-typescript": "^4.1.1",
     "@types/jest": "^25.2.1",
-    "@types/node": "^13.13.2",
+    "@types/node": "^13.13.4",
     "conventional-changelog-cli": "^2.0.31",
-    "jest": "^25.4.0",
-    "rollup": "^1.32.1",
+    "jest": "^25.5.0",
+    "rollup": "^2.7.3",
     "rollup-plugin-terser": "^5.3.0",
     "ts-jest": "^25.4.0",
     "tslib": "^1.11.1",
-    "tslint": "^6.1.0",
+    "tslint": "^6.1.2",
     "typescript": "^3.8.3"
   },
   "resolutions": {
