@@ -636,6 +636,32 @@ describe('ReactiveHandler', () => {
             expect(todos.entry).toEqual(newValue);
             expect(proxy.entry).toEqual(get.call(proxy));
         });
+        it('should preserve the identity of the accessors', () => {
+            const target = new ReactiveMembrane();
+            const todos = {};
+            let value = 0;
+            const newValue = {};
+            function get() {
+                return value;
+            }
+            function set(v) {
+                value = v;
+            }
+            Object.defineProperty(todos, 'entry', {
+                get,
+                set,
+                configurable: true
+            });
+            const proxy = target.getProxy(todos);
+            const proxyDesc = Object.getOwnPropertyDescriptor(proxy, 'entry');
+            Object.defineProperty(proxy, 'newentry', proxyDesc);
+            const copiedDesc = Object.getOwnPropertyDescriptor(todos, 'newentry');
+            const proxyCopiedDesc = Object.getOwnPropertyDescriptor(proxy, 'newentry');
+            expect(copiedDesc.get).toEqual(get);
+            expect(copiedDesc.set).toEqual(set);
+            expect(proxyDesc.get).toEqual(proxyCopiedDesc.get);
+            expect(proxyDesc.set).toEqual(proxyCopiedDesc.set);
+        });
         it('should be reactive when descriptor is accessed', () => {
             let observedTarget;
             let observedKey;
