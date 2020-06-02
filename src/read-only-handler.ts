@@ -1,30 +1,59 @@
 import {
-    isUndefined,
     ArrayConcat,
-    ObjectDefineProperty,
-    getOwnPropertyDescriptor,
     getOwnPropertyNames,
     getOwnPropertySymbols,
-    hasOwnProperty,
+    getPrototypeOf,
+    unwrap,
 } from './shared';
 
 import {
     ReactiveMembrane,
     ReactiveMembraneShadowTarget,
-    wrapDescriptor,
+    getOwnPropertyDescriptorMembraneTrap,
+    isExtensibleMembraneTrap,
+    MembraneProxyHandler,
 } from './reactive-membrane';
 
-function wrapReadOnlyValue(membrane: ReactiveMembrane, value: any): any {
-    return membrane.valueIsObservable(value) ? membrane.getReadOnlyProxy(value) : value;
-}
+const getterMap = new WeakMap<() => any, () => any>();
+const setterMap = new WeakMap<(v: any) => void, (v: any) => void>();
 
-export class ReadOnlyHandler {
-    private originalTarget: any;
-    private membrane: ReactiveMembrane;
+export class ReadOnlyHandler implements MembraneProxyHandler {
+    originalTarget: any;
+    membrane: ReactiveMembrane;
 
     constructor(membrane: ReactiveMembrane, value: any) {
         this.originalTarget = value;
         this.membrane = membrane;
+    }
+    wrapValue(value: any): any {
+        const { membrane } = this;
+        return membrane.valueIsObservable(value) ? membrane.getReadOnlyProxy(value) : value;
+    }
+    wrapGetter(originalGet: () => any): () => any {
+        if (getterMap.has(originalGet)) {
+            return getterMap.get(originalGet) as () => any;
+        }
+        const handler = this;
+        function get(this: any): any {
+            // invoking the original getter with the original target
+            return handler.wrapValue(originalGet.call(unwrap(this)));
+        };
+        getterMap.set(originalGet, get);
+        return get;
+    }
+    wrapSetter(originalSet: (v: any) => void): (v: any) => void {
+        if (setterMap.has(originalSet)) {
+            return setterMap.get(originalSet) as (v: any) => void;
+        }
+        const handler = this;
+        function set(this: any, v: any) {
+            if (process.env.NODE_ENV !== 'production') {
+                const { originalTarget } = handler;
+                throw new Error(`Invalid mutation: Cannot invoke a setter on "${originalTarget}". "${originalTarget}" is read-only.`);
+            }
+        };
+        setterMap.set(originalSet, set);
+        return set;
     }
     get(shadowTarget: ReactiveMembraneShadowTarget, key: PropertyKey): any {
         const { membrane, originalTarget } = this;
@@ -62,43 +91,21 @@ export class ReadOnlyHandler {
         const { originalTarget } = this;
         return ArrayConcat.call(getOwnPropertyNames(originalTarget), getOwnPropertySymbols(originalTarget));
     }
+    isExtensible(shadowTarget: ReactiveMembraneShadowTarget): boolean {
+        return isExtensibleMembraneTrap.call(this, shadowTarget);
+    }
     setPrototypeOf(shadowTarget: ReactiveMembraneShadowTarget, prototype: any): any {
         if (process.env.NODE_ENV !== 'production') {
             const { originalTarget } = this;
             throw new Error(`Invalid prototype mutation: Cannot set prototype on "${originalTarget}". "${originalTarget}" prototype is read-only.`);
         }
     }
+    getPrototypeOf(shadowTarget: ReactiveMembraneShadowTarget): object {
+        const { originalTarget } = this;
+        return getPrototypeOf(originalTarget);
+    }
     getOwnPropertyDescriptor(shadowTarget: ReactiveMembraneShadowTarget, key: PropertyKey): PropertyDescriptor | undefined {
-        const { originalTarget, membrane } = this;
-        const { valueObserved } = membrane;
-
-        // keys looked up via hasOwnProperty need to be reactive
-        valueObserved(originalTarget, key);
-
-        let desc = getOwnPropertyDescriptor(originalTarget, key);
-        if (isUndefined(desc)) {
-            return desc;
-        }
-        const shadowDescriptor = getOwnPropertyDescriptor(shadowTarget, key);
-        if (!isUndefined(shadowDescriptor)) {
-            return shadowDescriptor;
-        }
-        // Note: by accessing the descriptor, the key is marked as observed
-        // but access to the value or getter (if available) cannot be observed,
-        // just like regular methods, in which case we just do nothing.
-        desc = wrapDescriptor(membrane, desc, wrapReadOnlyValue);
-        if (hasOwnProperty.call(desc, 'set')) {
-            desc.set = undefined; // readOnly membrane does not allow setters
-        }
-        if (!desc.configurable) {
-            // If descriptor from original target is not configurable,
-            // We must copy the wrapped descriptor over to the shadow target.
-            // Otherwise, proxy will throw an invariant error.
-            // This is our last chance to lock the value.
-            // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy/handler/getOwnPropertyDescriptor#Invariants
-            ObjectDefineProperty(shadowTarget, key, desc);
-        }
-        return desc;
+        return getOwnPropertyDescriptorMembraneTrap.call(this, shadowTarget, key);
     }
     preventExtensions(shadowTarget: ReactiveMembraneShadowTarget): boolean {
         if (process.env.NODE_ENV !== 'production') {

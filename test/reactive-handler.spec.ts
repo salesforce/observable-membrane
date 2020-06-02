@@ -701,6 +701,28 @@ describe('ReactiveHandler', () => {
             expect(proxy).not.toBe(value);
             expect(defaultMembrane.unwrapProxy(value)).toBe(value);
         });
+        it('access allow length mutations', () => {
+            const value = [];
+            const proxy = defaultMembrane.getProxy(value);
+            expect(Array.isArray(proxy)).toBe(true);
+            expect(proxy.length).toBe(0);
+            proxy.length = 1;
+            expect(proxy.length).toBe(1);
+            proxy[1] = 'another';
+            expect(proxy.length).toBe(2);
+            expect(proxy[1]).toBe('another');
+        });
+        it('access length descriptor', () => {
+            const value = [];
+            const proxy = defaultMembrane.getProxy(value);
+            expect(Array.isArray(proxy)).toBe(true);
+            expect(Object.getOwnPropertyDescriptor(proxy, 'length').value).toBe(0);
+            proxy.length = 1;
+            expect(Object.getOwnPropertyDescriptor(proxy, 'length').value).toBe(1);
+            proxy[1] = 'another';
+            expect(Object.getOwnPropertyDescriptor(proxy, 'length').value).toBe(2);
+            expect(proxy[1]).toBe('another');
+        });
         it('access items in array', () => {
             const value = ['foo', 'bar'];
             const proxy = defaultMembrane.getProxy(value);

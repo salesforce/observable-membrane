@@ -8,6 +8,12 @@ import {
     isFunction,
     hasOwnProperty,
     registerProxy,
+    preventExtensions,
+    ArrayConcat,
+    getOwnPropertyNames,
+    getOwnPropertySymbols,
+    getOwnPropertyDescriptor,
+    isExtensible,
 } from './shared';
 import { ReactiveProxyHandler } from './reactive-handler';
 import { ReadOnlyHandler } from './read-only-handler';
@@ -35,6 +41,14 @@ export interface ObservableMembraneInit {
     valueObserved?: ReactiveMembraneAccessCallback;
     valueDistortion?: ReactiveMembraneDistortionCallback;
     valueIsObservable?: ReactiveMembraneObservableCallback;
+}
+
+export interface MembraneProxyHandler extends ProxyHandler<any> {
+    originalTarget: any;
+    membrane: ReactiveMembrane;
+    wrapValue(v: any): any;
+    wrapGetter(get: () => any): () => any;
+    wrapSetter(set: (v: any) => void): (v: any) => void;
 }
 
 function createShadowTarget(value: any): ReactiveMembraneShadowTarget {
@@ -76,29 +90,148 @@ const defaultValueMutated: ReactiveMembraneMutationCallback = (obj: any, key: Pr
 };
 const defaultValueDistortion: ReactiveMembraneDistortionCallback = (value: any) => value;
 
-export function wrapDescriptor(membrane: ReactiveMembrane, descriptor: PropertyDescriptor, getValue: (membrane: ReactiveMembrane, originalValue: any) => any): PropertyDescriptor {
-    const { set, get } = descriptor;
+const reserveGetterMap = new WeakMap<() => any, () => any>();
+const reverseSetterMap = new WeakMap<(v: any) => void, (v: any) => void>();
+
+export function wrapDescriptor(handler: MembraneProxyHandler, descriptor: PropertyDescriptor): PropertyDescriptor {
     if (hasOwnProperty.call(descriptor, 'value')) {
-        descriptor.value = getValue(membrane, descriptor.value);
+        descriptor.value = handler.wrapValue(descriptor.value);
     } else {
-        if (!isUndefined(get)) {
-            descriptor.get = function() {
-                // invoking the original getter with the original target
-                return getValue(membrane, get.call(unwrap(this)));
-            };
+        const { set: originalSet, get: originalGet } = descriptor;
+        if (!isUndefined(originalGet)) {
+            const get = handler.wrapGetter(originalGet);
+            reserveGetterMap.set(get, originalGet);
+            descriptor.get = get;
         }
-        if (!isUndefined(set)) {
-            descriptor.set = function(value) {
-                // At this point we don't have a clear indication of whether
-                // or not a valid mutation will occur, we don't have the key,
-                // and we are not sure why and how they are invoking this setter.
-                // Nevertheless we preserve the original semantics by invoking the
-                // original setter with the original target and the unwrapped value
-                set.call(unwrap(this), membrane.unwrapProxy(value));
-            };
+        if (!isUndefined(originalSet)) {
+            const set = handler.wrapSetter(originalSet);
+            reverseSetterMap.set(set, originalSet);
+            descriptor.set = set;
         }
     }
     return descriptor;
+}
+
+export function unwrapDescriptor(handler: MembraneProxyHandler, descriptor: PropertyDescriptor): PropertyDescriptor {
+    if (hasOwnProperty.call(descriptor, 'value')) {
+        // dealing with a data descriptor
+        descriptor.value = unwrap(descriptor.value);
+    } else {
+        const { set, get } = descriptor;
+        if (!isUndefined(get)) {
+            descriptor.get = reserveGetterMap.get(get) || get;
+        }
+        if (!isUndefined(set)) {
+            descriptor.set = reverseSetterMap.get(set) || set;
+        }
+    }
+    return descriptor;
+}
+
+export function copyDescriptorIntoShadowTarget(
+    handler: MembraneProxyHandler,
+    shadowTarget: ReactiveMembraneShadowTarget,
+    key: PropertyKey,
+) {
+    const { originalTarget } = handler;
+    // Note: a property might get defined multiple times in the shadowTarget
+    //       but it will always be compatible with the previous descriptor
+    //       to preserve the object invariants, which makes these lines safe.
+    const normalizedDescriptor = getOwnPropertyDescriptor(originalTarget, key);
+    if (!isUndefined(normalizedDescriptor)) {
+        const blueDesc = wrapDescriptor(handler, normalizedDescriptor);
+        ObjectDefineProperty(shadowTarget, key, blueDesc);
+    }
+}
+
+export function lockShadowTarget(
+    handler: MembraneProxyHandler,
+    shadowTarget: ReactiveMembraneShadowTarget
+): void {
+    const { originalTarget } = handler;
+    const targetKeys = ArrayConcat.call(getOwnPropertyNames(originalTarget), getOwnPropertySymbols(originalTarget));
+    targetKeys.forEach((key: PropertyKey) => {
+        copyDescriptorIntoShadowTarget(handler, shadowTarget, key);
+    });
+
+    preventExtensions(shadowTarget);
+}
+
+export function isExtensibleMembraneTrap(
+    this: MembraneProxyHandler,
+    shadowTarget: ReactiveMembraneShadowTarget
+): boolean {
+    const { originalTarget } = this;
+    // optimization to avoid attempting to lock down the shadowTarget multiple times
+    if (!isExtensible(shadowTarget)) {
+        return false; // was already locked down
+    }
+    if (!isExtensible(originalTarget)) {
+        lockShadowTarget(this, shadowTarget);
+        return false;
+    }
+    return true;
+}
+
+export function getOwnPropertyDescriptorMembraneTrap(
+    this: MembraneProxyHandler,
+    shadowTarget: ReactiveMembraneShadowTarget,
+    key: PropertyKey
+): PropertyDescriptor | undefined {
+    const { originalTarget, membrane: { valueObserved } } = this;
+
+    // keys looked up via hasOwnProperty need to be reactive
+    valueObserved(originalTarget, key);
+
+    const desc = getOwnPropertyDescriptor(originalTarget, key);
+    if (isUndefined(desc)) {
+        return desc;
+    }
+
+    if (desc.configurable === false) {
+        // updating the descriptor to non-configurable on the shadow
+        copyDescriptorIntoShadowTarget(this, shadowTarget, key);
+    }
+    // Note: by accessing the descriptor, the key is marked as observed
+    // but access to the value, setter or getter (if available) cannot observe
+    // mutations, just like regular methods, in which case we just do nothing.
+    return wrapDescriptor(this, desc);
+}
+
+export function preventExtensionsMembraneTrap(
+    this: MembraneProxyHandler,
+    shadowTarget: ReactiveMembraneShadowTarget
+): boolean {
+    const { originalTarget } = this;
+    if (isExtensible(shadowTarget)) {
+        preventExtensions(originalTarget);
+        // if the originalTarget is a proxy itself, it might reject
+        // the preventExtension call, in which case we should not attempt to lock down
+        // the shadow target.
+        if (isExtensible(originalTarget)) {
+            return false;
+        }
+        lockShadowTarget(this, shadowTarget);
+    }
+    return true;
+}
+
+export function definePropertyMembraneTrap(
+    this: MembraneProxyHandler,
+    shadowTarget: ReactiveMembraneShadowTarget,
+    key: PropertyKey,
+    descriptor: PropertyDescriptor
+): boolean {
+    const { originalTarget, membrane: { valueMutated } } = this;
+    // in the future, we could use Reflect.defineProperty to know the result of the operation
+    // for now, we assume it was carry on (if originalTarget is a proxy, it could reject the operation)
+    ObjectDefineProperty(originalTarget, key, unwrapDescriptor(this, descriptor));
+    // intentionally testing against true since it could be undefined as well
+    if (descriptor.configurable === false) {
+        copyDescriptorIntoShadowTarget(this, shadowTarget, key);
+    }
+    valueMutated(originalTarget, key);
+    return true;
 }
 
 export class ReactiveMembrane {
