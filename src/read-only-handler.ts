@@ -34,7 +34,7 @@ export class ReadOnlyHandler implements MembraneProxyHandler {
             return getterMap.get(originalGet) as () => any;
         }
         const handler = this;
-        function get(this: any): any {
+        const get = function (this: any): any {
             // invoking the original getter with the original target
             return handler.wrapValue(originalGet.call(unwrap(this)));
         };
@@ -46,7 +46,7 @@ export class ReadOnlyHandler implements MembraneProxyHandler {
             return setterMap.get(originalSet) as (v: any) => void;
         }
         const handler = this;
-        function set(this: any, v: any) {
+        const set = function (this: any, v: any) {
             if (process.env.NODE_ENV !== 'production') {
                 const { originalTarget } = handler;
                 throw new Error(`Invalid mutation: Cannot invoke a setter on "${originalTarget}". "${originalTarget}" is read-only.`);
