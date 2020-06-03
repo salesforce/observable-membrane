@@ -71,7 +71,8 @@ describe('ReadOnlyHandler', () => {
 
         const property = target.getReadOnlyProxy(obj);
         const desc = Object.getOwnPropertyDescriptor(property, 'foo')!;
-        expect(target.getReadOnlyProxy(desc.get!())).toBe(property.foo);
+        expect(desc.get!.call(property)).toBe(property.foo);
+        expect(target.getReadOnlyProxy(desc.get!.call(property))).toBe(property.foo);
     });
     it('should handle has correctly', function() {
         const target = new ReactiveMembrane();

@@ -1,33 +1,16 @@
-import {
-    ArrayConcat,
-    getOwnPropertyNames,
-    getOwnPropertySymbols,
-    getPrototypeOf,
-    unwrap,
-} from './shared';
-
-import {
-    ReactiveMembrane,
-    ReactiveMembraneShadowTarget,
-    getOwnPropertyDescriptorMembraneTrap,
-    isExtensibleMembraneTrap,
-    MembraneProxyHandler,
-} from './reactive-membrane';
+import { unwrap, freeze } from './shared';
+import { ReactiveMembrane } from './reactive-membrane';
+import { BaseProxyHandler, ReactiveMembraneShadowTarget } from './base-handler';
 
 const getterMap = new WeakMap<() => any, () => any>();
 const setterMap = new WeakMap<(v: any) => void, (v: any) => void>();
 
-export class ReadOnlyHandler implements MembraneProxyHandler {
-    originalTarget: any;
-    membrane: ReactiveMembrane;
-
+export class ReadOnlyHandler extends BaseProxyHandler {
     constructor(membrane: ReactiveMembrane, value: any) {
-        this.originalTarget = value;
-        this.membrane = membrane;
+        super(membrane, value);
     }
     wrapValue(value: any): any {
-        const { membrane } = this;
-        return membrane.valueIsObservable(value) ? membrane.getReadOnlyProxy(value) : value;
+        return this.membrane.getReadOnlyProxy(value);
     }
     wrapGetter(originalGet: () => any): () => any {
         if (getterMap.has(originalGet)) {
@@ -55,13 +38,6 @@ export class ReadOnlyHandler implements MembraneProxyHandler {
         setterMap.set(originalSet, set);
         return set;
     }
-    get(shadowTarget: ReactiveMembraneShadowTarget, key: PropertyKey): any {
-        const { membrane, originalTarget } = this;
-        const value = originalTarget[key];
-        const { valueObserved } = membrane;
-        valueObserved(originalTarget, key);
-        return membrane.getReadOnlyProxy(value);
-    }
     set(shadowTarget: ReactiveMembraneShadowTarget, key: PropertyKey, value: any): boolean {
         if (process.env.NODE_ENV !== 'production') {
             const { originalTarget } = this;
@@ -76,36 +52,11 @@ export class ReadOnlyHandler implements MembraneProxyHandler {
         }
         return false;
     }
-    apply(shadowTarget: ReactiveMembraneShadowTarget, thisArg: any, argArray: any[]) {
-        /* No op */
-    }
-    construct(target: ReactiveMembraneShadowTarget, argArray: any, newTarget?: any): any {
-        /* No op */
-    }
-    has(shadowTarget: ReactiveMembraneShadowTarget, key: PropertyKey): boolean {
-        const { originalTarget, membrane: { valueObserved } } = this;
-        valueObserved(originalTarget, key);
-        return key in originalTarget;
-    }
-    ownKeys(shadowTarget: ReactiveMembraneShadowTarget): string[] {
-        const { originalTarget } = this;
-        return ArrayConcat.call(getOwnPropertyNames(originalTarget), getOwnPropertySymbols(originalTarget));
-    }
-    isExtensible(shadowTarget: ReactiveMembraneShadowTarget): boolean {
-        return isExtensibleMembraneTrap.call(this, shadowTarget);
-    }
     setPrototypeOf(shadowTarget: ReactiveMembraneShadowTarget, prototype: any): any {
         if (process.env.NODE_ENV !== 'production') {
             const { originalTarget } = this;
             throw new Error(`Invalid prototype mutation: Cannot set prototype on "${originalTarget}". "${originalTarget}" prototype is read-only.`);
         }
-    }
-    getPrototypeOf(shadowTarget: ReactiveMembraneShadowTarget): object {
-        const { originalTarget } = this;
-        return getPrototypeOf(originalTarget);
-    }
-    getOwnPropertyDescriptor(shadowTarget: ReactiveMembraneShadowTarget, key: PropertyKey): PropertyDescriptor | undefined {
-        return getOwnPropertyDescriptorMembraneTrap.call(this, shadowTarget, key);
     }
     preventExtensions(shadowTarget: ReactiveMembraneShadowTarget): boolean {
         if (process.env.NODE_ENV !== 'production') {
@@ -122,3 +73,6 @@ export class ReadOnlyHandler implements MembraneProxyHandler {
         return false;
     }
 }
+
+// future proxy optimizations
+freeze(ReadOnlyHandler.prototype);

@@ -1,37 +1,16 @@
-import {
-    toString,
-    ArrayConcat,
-    isArray,
-    getPrototypeOf,
-    getOwnPropertyNames,
-    getOwnPropertySymbols,
-    unwrap,
-} from './shared';
-
-import {
-    ReactiveMembrane,
-    ReactiveMembraneShadowTarget,
-    isExtensibleMembraneTrap,
-    getOwnPropertyDescriptorMembraneTrap,
-    definePropertyMembraneTrap,
-    preventExtensionsMembraneTrap,
-    MembraneProxyHandler,
-} from './reactive-membrane';
+import { toString, isArray, unwrap, isExtensible, preventExtensions, ObjectDefineProperty, freeze } from './shared';
+import { ReactiveMembrane } from './reactive-membrane';
+import { BaseProxyHandler, ReactiveMembraneShadowTarget } from './base-handler';
 
 const getterMap = new WeakMap<() => any, () => any>();
 const setterMap = new WeakMap<(v: any) => void, (v: any) => void>();
 
-export class ReactiveProxyHandler implements MembraneProxyHandler {
-    originalTarget: any;
-    membrane: ReactiveMembrane;
-
+export class ReactiveProxyHandler extends BaseProxyHandler {
     constructor(membrane: ReactiveMembrane, value: any) {
-        this.originalTarget = value;
-        this.membrane = membrane;
+        super(membrane, value);
     }
     wrapValue(value: any): any {
-        const { membrane } = this;
-        return membrane.valueIsObservable(value) ? membrane.getProxy(value) : value;
+        return this.membrane.getProxy(value);
     }
     wrapGetter(originalGet: () => any): () => any {
         if (getterMap.has(originalGet)) {
@@ -49,20 +28,12 @@ export class ReactiveProxyHandler implements MembraneProxyHandler {
         if (setterMap.has(originalSet)) {
             return setterMap.get(originalSet) as (v: any) => void;
         }
-        const handler = this;
         const set = function (this: any, v: any) {
             // invoking the original setter with the original target
             originalSet.call(unwrap(this), unwrap(v));
         };
         setterMap.set(originalSet, set);
         return set;
-    }
-    get(shadowTarget: ReactiveMembraneShadowTarget, key: PropertyKey): any {
-        const { originalTarget, membrane } = this;
-        const value = originalTarget[key];
-        const { valueObserved } = membrane;
-        valueObserved(originalTarget, key);
-        return membrane.getProxy(value);
     }
     set(shadowTarget: ReactiveMembraneShadowTarget, key: PropertyKey, value: any): boolean {
         const { originalTarget, membrane: { valueMutated } } = this;
@@ -85,40 +56,38 @@ export class ReactiveProxyHandler implements MembraneProxyHandler {
         valueMutated(originalTarget, key);
         return true;
     }
-    apply(shadowTarget: ReactiveMembraneShadowTarget, thisArg: any, argArray: any[]) {
-        /* No op */
-    }
-    construct(shadowTarget: ReactiveMembraneShadowTarget, argArray: any, newTarget?: any): any {
-        /* No op */
-    }
-    has(shadowTarget: ReactiveMembraneShadowTarget, key: PropertyKey): boolean {
-        const { originalTarget, membrane: { valueObserved } } = this;
-        valueObserved(originalTarget, key);
-        return key in originalTarget;
-    }
-    ownKeys(shadowTarget: ReactiveMembraneShadowTarget): string[] {
-        const { originalTarget } = this;
-        return ArrayConcat.call(getOwnPropertyNames(originalTarget), getOwnPropertySymbols(originalTarget));
-    }
-    isExtensible(shadowTarget: ReactiveMembraneShadowTarget): boolean {
-        return isExtensibleMembraneTrap.call(this, shadowTarget);
-    }
     setPrototypeOf(shadowTarget: ReactiveMembraneShadowTarget, prototype: any): any {
         if (process.env.NODE_ENV !== 'production') {
             throw new Error(`Invalid setPrototypeOf invocation for reactive proxy ${toString(this.originalTarget)}. Prototype of reactive objects cannot be changed.`);
         }
     }
-    getPrototypeOf(shadowTarget: ReactiveMembraneShadowTarget): object {
-        const { originalTarget } = this;
-        return getPrototypeOf(originalTarget);
-    }
-    getOwnPropertyDescriptor(shadowTarget: ReactiveMembraneShadowTarget, key: PropertyKey): PropertyDescriptor | undefined {
-        return getOwnPropertyDescriptorMembraneTrap.call(this, shadowTarget, key);
-    }
     preventExtensions(shadowTarget: ReactiveMembraneShadowTarget): boolean {
-        return preventExtensionsMembraneTrap.call(this, shadowTarget);
+        const { originalTarget } = this;
+        if (isExtensible(shadowTarget)) {
+            preventExtensions(originalTarget);
+            // if the originalTarget is a proxy itself, it might reject
+            // the preventExtension call, in which case we should not attempt to lock down
+            // the shadow target.
+            if (isExtensible(originalTarget)) {
+                return false;
+            }
+            this.lockShadowTarget(shadowTarget);
+        }
+        return true;
     }
     defineProperty(shadowTarget: ReactiveMembraneShadowTarget, key: PropertyKey, descriptor: PropertyDescriptor): boolean {
-        return definePropertyMembraneTrap.call(this, shadowTarget, key, descriptor);
+        const { originalTarget, membrane: { valueMutated } } = this;
+        // in the future, we could use Reflect.defineProperty to know the result of the operation
+        // for now, we assume it was carry on (if originalTarget is a proxy, it could reject the operation)
+        ObjectDefineProperty(originalTarget, key, this.unwrapDescriptor(descriptor));
+        // intentionally testing against true since it could be undefined as well
+        if (descriptor.configurable === false) {
+            this.copyDescriptorIntoShadowTarget(shadowTarget, key);
+        }
+        valueMutated(originalTarget, key);
+        return true;
     }
 }
+
+// future proxy optimizations
+freeze(ReactiveProxyHandler.prototype);
