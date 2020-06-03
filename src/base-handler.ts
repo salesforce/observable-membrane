@@ -38,6 +38,8 @@ export abstract class BaseProxyHandler {
     constructor(membrane: ReactiveMembrane, value: any) {
         this.originalTarget = value;
         this.membrane = membrane;
+        // future proxy optimizations
+        freeze(this);
     }
 
     // Abstract utility methods

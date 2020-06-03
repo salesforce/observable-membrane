@@ -1,14 +1,10 @@
 import { unwrap, freeze } from './shared';
-import { ReactiveMembrane } from './reactive-membrane';
 import { BaseProxyHandler, ReactiveMembraneShadowTarget } from './base-handler';
 
 const getterMap = new WeakMap<() => any, () => any>();
 const setterMap = new WeakMap<(v: any) => void, (v: any) => void>();
 
 export class ReadOnlyHandler extends BaseProxyHandler {
-    constructor(membrane: ReactiveMembrane, value: any) {
-        super(membrane, value);
-    }
     wrapValue(value: any): any {
         return this.membrane.getReadOnlyProxy(value);
     }
