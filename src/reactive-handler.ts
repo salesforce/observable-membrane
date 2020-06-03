@@ -52,7 +52,7 @@ export class ReactiveProxyHandler implements MembraneProxyHandler {
         const handler = this;
         const set = function (this: any, v: any) {
             // invoking the original setter with the original target
-            handler.wrapValue(originalSet.call(unwrap(this), v));
+            originalSet.call(unwrap(this), unwrap(v));
         };
         setterMap.set(originalSet, set);
         return set;

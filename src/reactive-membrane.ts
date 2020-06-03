@@ -137,10 +137,10 @@ export function copyDescriptorIntoShadowTarget(
     // Note: a property might get defined multiple times in the shadowTarget
     //       but it will always be compatible with the previous descriptor
     //       to preserve the object invariants, which makes these lines safe.
-    const normalizedDescriptor = getOwnPropertyDescriptor(originalTarget, key);
-    if (!isUndefined(normalizedDescriptor)) {
-        const blueDesc = wrapDescriptor(handler, normalizedDescriptor);
-        ObjectDefineProperty(shadowTarget, key, blueDesc);
+    const originalDescriptor = getOwnPropertyDescriptor(originalTarget, key);
+    if (!isUndefined(originalDescriptor)) {
+        const wrappedDesc = wrapDescriptor(handler, originalDescriptor);
+        ObjectDefineProperty(shadowTarget, key, wrappedDesc);
     }
 }
 
@@ -180,12 +180,12 @@ export function getOwnPropertyDescriptorMembraneTrap(
 ): PropertyDescriptor | undefined {
     const { originalTarget, membrane: { valueObserved } } = this;
 
-    // keys looked up via hasOwnProperty need to be reactive
+    // keys looked up via getOwnPropertyDescriptor need to be reactive
     valueObserved(originalTarget, key);
 
     const desc = getOwnPropertyDescriptor(originalTarget, key);
     if (isUndefined(desc)) {
-        return desc;
+        return undefined;
     }
 
     if (desc.configurable === false) {
