@@ -40,4 +40,35 @@ describe('constructor', () => {
         expect(wet !== regex1).toBe(true);
         expect(wet.source).toBe("fooBar");
     });
+
+    it('should support proxies for branded non-plain objects', () => {
+        class Foo {
+            _x = 0;
+            get x() {
+                return this._x;
+            }
+            set x(v) {
+                this._x = v;
+            }
+            doubleX() {
+                return this._x * 2;
+            }
+        }
+        const tag = Symbol.for('@@myMembraneTag');
+        const blue = new Foo();
+        Object.defineProperty(blue, tag, {});
+        const target = new ReactiveMembrane({
+            valueIsObservable(value) {
+                return typeof value === 'object' && value !== null && value.hasOwnProperty(tag);
+            },
+        });
+
+        const red = target.getProxy(blue);
+        expect(blue !== red).toBe(true);
+        expect(red.x).toBe(0);
+        red.x = 1;
+        expect(red.x).toBe(1);
+        expect(blue.x).toBe(1);
+        expect(red.doubleX()).toBe(2);
+    });
 });
