@@ -7,7 +7,6 @@ import {
     isUndefined,
     isExtensible,
     hasOwnProperty,
-    unwrap,
     ObjectDefineProperty,
     preventExtensions,
     isArray,
@@ -27,9 +26,6 @@ export function createShadowTarget(value: any): ReactiveMembraneShadowTarget {
     }
     return shadowTarget as ReactiveMembraneShadowTarget;
 }
-
-const reserveGetterMap = new WeakMap<() => any, () => any>();
-const reverseSetterMap = new WeakMap<(v: any) => void, (v: any) => void>();
 
 export abstract class BaseProxyHandler {
     originalTarget: any;
@@ -57,28 +53,12 @@ export abstract class BaseProxyHandler {
             const { set: originalSet, get: originalGet } = descriptor;
             if (!isUndefined(originalGet)) {
                 const get = this.wrapGetter(originalGet);
-                reserveGetterMap.set(get, originalGet);
+                
                 descriptor.get = get;
             }
             if (!isUndefined(originalSet)) {
                 const set = this.wrapSetter(originalSet);
-                reverseSetterMap.set(set, originalSet);
                 descriptor.set = set;
-            }
-        }
-        return descriptor;
-    }
-    unwrapDescriptor(descriptor: PropertyDescriptor): PropertyDescriptor {
-        if (hasOwnProperty.call(descriptor, 'value')) {
-            // dealing with a data descriptor
-            descriptor.value = unwrap(descriptor.value);
-        } else {
-            const { set, get } = descriptor;
-            if (!isUndefined(get)) {
-                descriptor.get = reserveGetterMap.get(get) || get;
-            }
-            if (!isUndefined(set)) {
-                descriptor.set = reverseSetterMap.get(set) || set;
             }
         }
         return descriptor;

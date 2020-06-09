@@ -662,6 +662,52 @@ describe('ReactiveHandler', () => {
             expect(proxyDesc.get).toEqual(proxyCopiedDesc.get);
             expect(proxyDesc.set).toEqual(proxyCopiedDesc.set);
         });
+        it('should protect against leaking accessors into the blue side', () => {
+            const target = new ReactiveMembrane();
+            const todos = {};
+            let value = 0;
+            let getterThisValue = null;
+            let setterThisValue = null;
+            const newValue = {};
+            function get() {
+                getterThisValue = this;
+                return value;
+            }
+            function set(v) {
+                setterThisValue = this;
+                value = v;
+            }
+            const proxy = target.getProxy(todos);
+            // installing and interacting with proxy
+            Object.defineProperty(proxy, 'entry', {
+                get,
+                set,
+                configurable: true
+            });
+            const proxyDesc = Object.getOwnPropertyDescriptor(proxy, 'entry');
+            expect(proxyDesc.get).toEqual(get);
+            expect(proxyDesc.set).toEqual(set);
+            expect(proxyDesc.get).toEqual(Object.getOwnPropertyDescriptor(proxy, 'entry').get);
+            expect(proxyDesc.set).toEqual(Object.getOwnPropertyDescriptor(proxy, 'entry').set);
+            expect(proxy.entry).toBe(0);
+            expect(getterThisValue).toBe(proxy);
+            proxy.entry = 1;
+            expect(setterThisValue).toBe(proxy);
+            expect(value).toBe(1);
+            expect(proxy.entry).toBe(1);
+            // interacting with real target
+            const desc = Object.getOwnPropertyDescriptor(todos, 'entry');
+            expect(desc.get).not.toEqual(get);
+            expect(desc.set).not.toEqual(set);
+            expect(desc.get).toEqual(Object.getOwnPropertyDescriptor(todos, 'entry').get); // identity
+            expect(desc.set).toEqual(Object.getOwnPropertyDescriptor(todos, 'entry').set); // identity
+            expect((todos as any).entry).toBe(1);
+            expect(getterThisValue).toBe(proxy);
+            (todos as any).entry = 2;
+            expect(setterThisValue).toBe(proxy);
+            expect(value).toBe(2);
+            expect((todos as any).entry).toBe(2);
+        });
         it('should be reactive when descriptor is accessed', () => {
             let observedTarget;
             let observedKey;
