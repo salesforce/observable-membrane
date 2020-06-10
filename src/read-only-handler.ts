@@ -1,4 +1,4 @@
-import { unwrap, freeze } from './shared';
+import { unwrap, freeze, isUndefined } from './shared';
 import { BaseProxyHandler, ReactiveMembraneShadowTarget } from './base-handler';
 
 const getterMap = new WeakMap<() => any, () => any>();
@@ -9,8 +9,9 @@ export class ReadOnlyHandler extends BaseProxyHandler {
         return this.membrane.getReadOnlyProxy(value);
     }
     wrapGetter(originalGet: () => any): () => any {
-        if (getterMap.has(originalGet)) {
-            return getterMap.get(originalGet) as () => any;
+        const wrappedGetter = getterMap.get(originalGet);
+        if (!isUndefined(wrappedGetter)) {
+            return wrappedGetter;
         }
         const handler = this;
         const get = function (this: any): any {
@@ -21,8 +22,9 @@ export class ReadOnlyHandler extends BaseProxyHandler {
         return get;
     }
     wrapSetter(originalSet: (v: any) => void): (v: any) => void {
-        if (setterMap.has(originalSet)) {
-            return setterMap.get(originalSet) as (v: any) => void;
+        const wrappedSetter = setterMap.get(originalSet);
+        if (!isUndefined(wrappedSetter)) {
+            return wrappedSetter;
         }
         const handler = this;
         const set = function (this: any, v: any) {

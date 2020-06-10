@@ -10,7 +10,6 @@ import {
     ObjectDefineProperty,
     preventExtensions,
     isArray,
-    isObject,
     freeze,
 } from './shared';
 import { ReactiveMembrane } from './reactive-membrane';
@@ -18,13 +17,7 @@ import { ReactiveMembrane } from './reactive-membrane';
 export type ReactiveMembraneShadowTarget = object;
 
 export function createShadowTarget(value: any): ReactiveMembraneShadowTarget {
-    let shadowTarget: ReactiveMembraneShadowTarget | undefined = undefined;
-    if (isArray(value)) {
-        shadowTarget = [];
-    } else if (isObject(value)) {
-        shadowTarget = {};
-    }
-    return shadowTarget as ReactiveMembraneShadowTarget;
+    return isArray(value) ? [] : {};
 }
 
 export abstract class BaseProxyHandler {

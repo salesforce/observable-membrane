@@ -3,7 +3,7 @@ import { BaseProxyHandler, ReactiveMembraneShadowTarget } from './base-handler';
 
 const getterMap = new WeakMap<() => any, () => any>();
 const setterMap = new WeakMap<(v: any) => void, (v: any) => void>();
-const reserveGetterMap = new WeakMap<() => any, () => any>();
+const reverseGetterMap = new WeakMap<() => any, () => any>();
 const reverseSetterMap = new WeakMap<(v: any) => void, (v: any) => void>();
 
 export class ReactiveProxyHandler extends BaseProxyHandler {
@@ -11,8 +11,9 @@ export class ReactiveProxyHandler extends BaseProxyHandler {
         return this.membrane.getProxy(value);
     }
     wrapGetter(originalGet: () => any): () => any {
-        if (getterMap.has(originalGet)) {
-            return getterMap.get(originalGet) as () => any;
+        const wrappedGetter = getterMap.get(originalGet);
+        if (!isUndefined(wrappedGetter)) {
+            return wrappedGetter;
         }
         const handler = this;
         const get = function (this: any): any {
@@ -20,12 +21,13 @@ export class ReactiveProxyHandler extends BaseProxyHandler {
             return handler.wrapValue(originalGet.call(unwrap(this)));
         };
         getterMap.set(originalGet, get);
-        reserveGetterMap.set(get, originalGet);
+        reverseGetterMap.set(get, originalGet);
         return get;
     }
     wrapSetter(originalSet: (v: any) => void): (v: any) => void {
-        if (setterMap.has(originalSet)) {
-            return setterMap.get(originalSet) as (v: any) => void;
+        const wrappedSetter = setterMap.get(originalSet);
+        if (!isUndefined(wrappedSetter)) {
+            return wrappedSetter;
         }
         const set = function (this: any, v: any) {
             // invoking the original setter with the original target
@@ -51,8 +53,9 @@ export class ReactiveProxyHandler extends BaseProxyHandler {
         return descriptor;
     }
     unwrapGetter(redGet: () => any): () => any {
-        if (reserveGetterMap.has(redGet)) {
-            return reserveGetterMap.get(redGet) as () => any;
+        const reverseGetter = reverseGetterMap.get(redGet);
+        if (!isUndefined(reverseGetter)) {
+            return reverseGetter;
         }
         const handler = this;
         const get = function (this: any): any {
@@ -60,12 +63,13 @@ export class ReactiveProxyHandler extends BaseProxyHandler {
             return unwrap(redGet.call(handler.wrapValue(this)));
         };
         getterMap.set(get, redGet);
-        reserveGetterMap.set(redGet, get);
+        reverseGetterMap.set(redGet, get);
         return get;
     }
     unwrapSetter(redSet: (v: any) => void): (v: any) => void {
-        if (reverseSetterMap.has(redSet)) {
-            return reverseSetterMap.get(redSet) as (v: any) => void;
+        const reverseSetter = reverseSetterMap.get(redSet);
+        if (!isUndefined(reverseSetter)) {
+            return reverseSetter;
         }
         const handler = this;
         const set = function (this: any, v: any) {
@@ -103,8 +107,8 @@ export class ReactiveProxyHandler extends BaseProxyHandler {
         }
     }
     preventExtensions(shadowTarget: ReactiveMembraneShadowTarget): boolean {
-        const { originalTarget } = this;
         if (isExtensible(shadowTarget)) {
+            const { originalTarget } = this;
             preventExtensions(originalTarget);
             // if the originalTarget is a proxy itself, it might reject
             // the preventExtension call, in which case we should not attempt to lock down
@@ -121,7 +125,7 @@ export class ReactiveProxyHandler extends BaseProxyHandler {
         // in the future, we could use Reflect.defineProperty to know the result of the operation
         // for now, we assume it was carry on (if originalTarget is a proxy, it could reject the operation)
         ObjectDefineProperty(originalTarget, key, this.unwrapDescriptor(descriptor));
-        // intentionally testing against true since it could be undefined as well
+        // intentionally testing if false since it could be undefined as well
         if (descriptor.configurable === false) {
             this.copyDescriptorIntoShadowTarget(shadowTarget, key);
         }
