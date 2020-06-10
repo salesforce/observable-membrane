@@ -15,7 +15,7 @@ import {
 } from './shared';
 import { ReactiveMembrane } from './reactive-membrane';
 
-export type ReactiveMembraneShadowTarget = object | any[];
+export type ReactiveMembraneShadowTarget = object;
 
 export function createShadowTarget(value: any): ReactiveMembraneShadowTarget {
     let shadowTarget: ReactiveMembraneShadowTarget | undefined = undefined;
@@ -100,9 +100,8 @@ export abstract class BaseProxyHandler {
         /* No op */
     }
     get(shadowTarget: ReactiveMembraneShadowTarget, key: PropertyKey): any {
-        const { originalTarget, membrane } = this;
+        const { originalTarget, membrane: { valueObserved } } = this;
         const value = originalTarget[key];
-        const { valueObserved } = membrane;
         valueObserved(originalTarget, key);
         return this.wrapValue(value);
     }
