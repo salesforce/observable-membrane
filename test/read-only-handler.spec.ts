@@ -332,7 +332,6 @@ describe('ReadOnlyHandler', () => {
             const target = new ReactiveMembrane();
             const todos = {};
             let value = 0;
-            const newValue = {};
             function get() {
                 return value;
             }

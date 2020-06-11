@@ -640,7 +640,6 @@ describe('ReactiveHandler', () => {
             const target = new ReactiveMembrane();
             const todos = {};
             let value = 0;
-            const newValue = {};
             function get() {
                 return value;
             }
@@ -664,11 +663,10 @@ describe('ReactiveHandler', () => {
         });
         it('should protect against leaking accessors into the blue side', () => {
             const target = new ReactiveMembrane();
-            const todos = {};
+            const todos: any = {};
             let value = 0;
             let getterThisValue = null;
             let setterThisValue = null;
-            const newValue = {};
             function get() {
                 getterThisValue = this;
                 return value;
@@ -687,8 +685,6 @@ describe('ReactiveHandler', () => {
             const proxyDesc = Object.getOwnPropertyDescriptor(proxy, 'entry');
             expect(proxyDesc.get).toEqual(get);
             expect(proxyDesc.set).toEqual(set);
-            expect(proxyDesc.get).toEqual(Object.getOwnPropertyDescriptor(proxy, 'entry').get);
-            expect(proxyDesc.set).toEqual(Object.getOwnPropertyDescriptor(proxy, 'entry').set);
             expect(proxy.entry).toBe(0);
             expect(getterThisValue).toBe(proxy);
             proxy.entry = 1;
