@@ -45,13 +45,10 @@ export abstract class BaseProxyHandler {
         } else {
             const { set: originalSet, get: originalGet } = descriptor;
             if (!isUndefined(originalGet)) {
-                const get = this.wrapGetter(originalGet);
-                
-                descriptor.get = get;
+                descriptor.get = this.wrapGetter(originalGet);;
             }
             if (!isUndefined(originalSet)) {
-                const set = this.wrapSetter(originalSet);
-                descriptor.set = set;
+                descriptor.set = this.wrapSetter(originalSet);
             }
         }
         return descriptor;
