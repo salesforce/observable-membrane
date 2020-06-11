@@ -636,6 +636,74 @@ describe('ReactiveHandler', () => {
             expect(todos.entry).toEqual(newValue);
             expect(proxy.entry).toEqual(get.call(proxy));
         });
+        it('should preserve the identity of the accessors', () => {
+            const target = new ReactiveMembrane();
+            const todos = {};
+            let value = 0;
+            function get() {
+                return value;
+            }
+            function set(v) {
+                value = v;
+            }
+            Object.defineProperty(todos, 'entry', {
+                get,
+                set,
+                configurable: true
+            });
+            const proxy = target.getProxy(todos);
+            const proxyDesc = Object.getOwnPropertyDescriptor(proxy, 'entry');
+            Object.defineProperty(proxy, 'newentry', proxyDesc);
+            const copiedDesc = Object.getOwnPropertyDescriptor(todos, 'newentry');
+            const proxyCopiedDesc = Object.getOwnPropertyDescriptor(proxy, 'newentry');
+            expect(copiedDesc.get).toEqual(get);
+            expect(copiedDesc.set).toEqual(set);
+            expect(proxyDesc.get).toEqual(proxyCopiedDesc.get);
+            expect(proxyDesc.set).toEqual(proxyCopiedDesc.set);
+        });
+        it('should protect against leaking accessors into the blue side', () => {
+            const target = new ReactiveMembrane();
+            const todos: any = {};
+            let value = 0;
+            let getterThisValue = null;
+            let setterThisValue = null;
+            function get() {
+                getterThisValue = this;
+                return value;
+            }
+            function set(v) {
+                setterThisValue = this;
+                value = v;
+            }
+            const proxy = target.getProxy(todos);
+            // installing and interacting with proxy
+            Object.defineProperty(proxy, 'entry', {
+                get,
+                set,
+                configurable: true
+            });
+            const proxyDesc = Object.getOwnPropertyDescriptor(proxy, 'entry');
+            expect(proxyDesc.get).toEqual(get);
+            expect(proxyDesc.set).toEqual(set);
+            expect(proxy.entry).toBe(0);
+            expect(getterThisValue).toBe(proxy);
+            proxy.entry = 1;
+            expect(setterThisValue).toBe(proxy);
+            expect(value).toBe(1);
+            expect(proxy.entry).toBe(1);
+            // interacting with real target
+            const desc = Object.getOwnPropertyDescriptor(todos, 'entry');
+            expect(desc.get).not.toEqual(get);
+            expect(desc.set).not.toEqual(set);
+            expect(desc.get).toEqual(Object.getOwnPropertyDescriptor(todos, 'entry').get); // identity
+            expect(desc.set).toEqual(Object.getOwnPropertyDescriptor(todos, 'entry').set); // identity
+            expect((todos as any).entry).toBe(1);
+            expect(getterThisValue).toBe(proxy);
+            (todos as any).entry = 2;
+            expect(setterThisValue).toBe(proxy);
+            expect(value).toBe(2);
+            expect((todos as any).entry).toBe(2);
+        });
         it('should be reactive when descriptor is accessed', () => {
             let observedTarget;
             let observedKey;
@@ -700,6 +768,28 @@ describe('ReactiveHandler', () => {
             const proxy = defaultMembrane.getProxy(value);
             expect(proxy).not.toBe(value);
             expect(defaultMembrane.unwrapProxy(value)).toBe(value);
+        });
+        it('access allow length mutations', () => {
+            const value = [];
+            const proxy = defaultMembrane.getProxy(value);
+            expect(Array.isArray(proxy)).toBe(true);
+            expect(proxy.length).toBe(0);
+            proxy.length = 1;
+            expect(proxy.length).toBe(1);
+            proxy[1] = 'another';
+            expect(proxy.length).toBe(2);
+            expect(proxy[1]).toBe('another');
+        });
+        it('access length descriptor', () => {
+            const value = [];
+            const proxy = defaultMembrane.getProxy(value);
+            expect(Array.isArray(proxy)).toBe(true);
+            expect(Object.getOwnPropertyDescriptor(proxy, 'length').value).toBe(0);
+            proxy.length = 1;
+            expect(Object.getOwnPropertyDescriptor(proxy, 'length').value).toBe(1);
+            proxy[1] = 'another';
+            expect(Object.getOwnPropertyDescriptor(proxy, 'length').value).toBe(2);
+            expect(proxy[1]).toBe('another');
         });
         it('access items in array', () => {
             const value = ['foo', 'bar'];
