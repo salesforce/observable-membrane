@@ -400,6 +400,7 @@ describe('ReactiveHandler', () => {
         const target = new ReactiveMembrane();
         const obj = { foo: 'bar' };
         const proxy = target.getProxy(obj);
+        debugger;
         Object.defineProperty(proxy, 'foo', {
             value: '',
             configurable: false,
@@ -873,12 +874,63 @@ describe('ReactiveHandler', () => {
             it('should notify on pop()', () => {
                 const value = ['foo', 'bar'];
                 const proxy = membrane.getProxy(value);
-                debugger;
                 expect(proxy.pop()).toBe('bar');
                 expect(changeSpy).toHaveBeenCalledTimes(2);
                 expect(changeSpy).toHaveBeenCalledWith(value, 'length');
                 expect(changeSpy).toHaveBeenCalledWith(value, '1');
             });
+        });
+    });
+    describe('with magic key property', () => {
+        it('should support tagPropertyKey', () => {
+            const o = {};
+            const target = new ReactiveMembrane({
+                tagPropertyKey: 'foo',
+            });
+
+            const wet = target.getProxy(o);
+            expect(Object.getOwnPropertyNames(wet).length).toBe(1);
+            expect('foo' in wet).toBe(true);
+            expect('foo' in o).toBe(false);
+            expect(wet.foo).toBe(undefined);
+        });
+        it('should not shadow tagPropertyKey if the target has it', () => {
+            const o = { foo: 1 };
+            const target = new ReactiveMembrane({
+                tagPropertyKey: 'foo',
+            });
+
+            const wet = target.getProxy(o);
+            expect(Object.getOwnPropertyNames(wet).length).toBe(1);
+            expect('foo' in wet).toBe(true);
+            expect('foo' in o).toBe(true);
+            expect(wet.foo).toBe(1);
+        });
+        it('should support frozen target when using tagPropertyKey', () => {
+            const o = Object.freeze({});
+            const target = new ReactiveMembrane({
+                tagPropertyKey: 'foo',
+            });
+
+            const wet = target.getProxy(o);
+            expect(Object.getOwnPropertyNames(wet).length).toBe(1);
+            expect('foo' in wet).toBe(true);
+            expect('foo' in o).toBe(false);
+            expect(wet.foo).toBe(undefined);
+        });
+        it('should support freezing the proxy when using tagPropertyKey', () => {
+            const o = {};
+            const target = new ReactiveMembrane({
+                tagPropertyKey: 'foo',
+            });
+
+            const wet = target.getProxy(o);
+            debugger;
+            Object.freeze(wet);
+            expect(Object.getOwnPropertyNames(wet).length).toBe(1);
+            expect('foo' in wet).toBe(true);
+            expect('foo' in o).toBe(false);
+            expect(wet.foo).toBe(undefined);
         });
     });
 });
