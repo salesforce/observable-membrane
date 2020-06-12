@@ -1,4 +1,5 @@
 import {
+    ArrayConcat,
     getPrototypeOf,
     getOwnPropertyNames,
     getOwnPropertySymbols,
@@ -62,10 +63,7 @@ export abstract class BaseProxyHandler {
     }
     lockShadowTarget(shadowTarget: ReactiveMembraneShadowTarget): void {
         const { originalTarget } = this;
-        const targetKeys: PropertyKey[] = [];
-        // small perf optimization using push instead of concat to avoid creating an extra array
-        ArrayPush.apply(targetKeys, getOwnPropertyNames(originalTarget));
-        ArrayPush.apply(targetKeys, getOwnPropertySymbols(originalTarget));
+        const targetKeys: PropertyKey[] = ArrayConcat.call(getOwnPropertyNames(originalTarget), getOwnPropertySymbols(originalTarget));
         targetKeys.forEach((key: PropertyKey) => {
             this.copyDescriptorIntoShadowTarget(shadowTarget, key);
         });
