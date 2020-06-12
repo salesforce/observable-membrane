@@ -930,5 +930,14 @@ describe('ReactiveHandler', () => {
             expect('foo' in o).toBe(false);
             expect(wet.foo).toBe(undefined);
         });
+        it('should return the proper the descriptor for the magic prop', () => {
+            const o = {};
+            const target = new ReactiveMembrane({
+                tagPropertyKey: 'foo',
+            });
+
+            const wet = target.getProxy(o);
+            expect(Object.getOwnPropertyDescriptor(wet, 'foo')).toMatchObject({ value: undefined, enumerable: false, configurable: false, writable: false });
+        });
     });
 });

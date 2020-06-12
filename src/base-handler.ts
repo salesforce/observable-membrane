@@ -140,8 +140,9 @@ export abstract class BaseProxyHandler {
                 return undefined;
             }
             // if the key is the membrane tag key, and is not in the original target,
-            // we produce a synthetic descriptor
+            // we produce a synthetic descriptor and install it on the shadow target
             desc = { value: undefined, writable: false, configurable: false, enumerable: false };
+            ObjectDefineProperty(shadowTarget, tagPropertyKey, desc);
         }
         if (desc.configurable === false) {
             // updating the descriptor to non-configurable on the shadow
