@@ -400,7 +400,6 @@ describe('ReactiveHandler', () => {
         const target = new ReactiveMembrane();
         const obj = { foo: 'bar' };
         const proxy = target.getProxy(obj);
-        debugger;
         Object.defineProperty(proxy, 'foo', {
             value: '',
             configurable: false,
@@ -925,7 +924,6 @@ describe('ReactiveHandler', () => {
             });
 
             const wet = target.getProxy(o);
-            debugger;
             Object.freeze(wet);
             expect(Object.getOwnPropertyNames(wet).length).toBe(1);
             expect('foo' in wet).toBe(true);
