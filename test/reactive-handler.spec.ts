@@ -880,7 +880,7 @@ describe('ReactiveHandler', () => {
             });
         });
     });
-    describe('with magic key property', () => {
+    describe('with tag key property', () => {
         it('should support tagPropertyKey', () => {
             const o = {};
             const target = new ReactiveMembrane({
@@ -930,7 +930,7 @@ describe('ReactiveHandler', () => {
             expect('foo' in o).toBe(false);
             expect(wet.foo).toBe(undefined);
         });
-        it('should return the proper the descriptor for the magic prop', () => {
+        it('should return the proper the descriptor for the tag property', () => {
             const o = {};
             const target = new ReactiveMembrane({
                 tagPropertyKey: 'foo',

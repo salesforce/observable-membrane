@@ -399,7 +399,7 @@ describe('ReadOnlyHandler', () => {
             Object.setPrototypeOf(property.foo, {});
         }).toThrow();
     });
-    describe('with magic key property', () => {
+    describe('with tag key property', () => {
         it('should support tagPropertyKey', () => {
             const o = {};
             const target = new ReactiveMembrane({
