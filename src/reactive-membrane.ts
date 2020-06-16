@@ -10,7 +10,6 @@ import {
 import { ReactiveProxyHandler } from './reactive-handler';
 import { ReadOnlyHandler } from './read-only-handler';
 import { init as initDevFormatter } from './reactive-dev-formatter';
-import { createShadowTarget } from './base-handler';
 
 if (process.env.NODE_ENV !== 'production') {
     initDevFormatter();
@@ -31,6 +30,7 @@ export interface ObservableMembraneInit {
     valueObserved?: ReactiveMembraneAccessCallback;
     valueDistortion?: ReactiveMembraneDistortionCallback;
     valueIsObservable?: ReactiveMembraneObservableCallback;
+    tagPropertyKey?: PropertyKey;
 }
 
 const ObjectDotPrototype = Object.prototype;
@@ -62,20 +62,26 @@ const defaultValueMutated: ReactiveMembraneMutationCallback = (obj: any, key: Pr
 };
 const defaultValueDistortion: ReactiveMembraneDistortionCallback = (value: any) => value;
 
+function createShadowTarget(value: any): any {
+    return isArray(value) ? [] : {};
+}
+
 export class ReactiveMembrane {
     valueDistortion: ReactiveMembraneDistortionCallback = defaultValueDistortion;
     valueMutated: ReactiveMembraneMutationCallback = defaultValueMutated;
     valueObserved: ReactiveMembraneAccessCallback = defaultValueObserved;
     valueIsObservable: ReactiveMembraneObservableCallback = defaultValueIsObservable;
+    tagPropertyKey: PropertyKey | undefined;
     private objectGraph: WeakMap<any, ReactiveState> = new WeakMap();
 
     constructor(options?: ObservableMembraneInit) {
         if (!isUndefined(options)) {
-            const { valueDistortion, valueMutated, valueObserved, valueIsObservable } = options;
+            const { valueDistortion, valueMutated, valueObserved, valueIsObservable, tagPropertyKey } = options;
             this.valueDistortion = isFunction(valueDistortion) ? valueDistortion : defaultValueDistortion;
             this.valueMutated = isFunction(valueMutated) ? valueMutated : defaultValueMutated;
             this.valueObserved = isFunction(valueObserved) ? valueObserved : defaultValueObserved;
             this.valueIsObservable = isFunction(valueIsObservable) ? valueIsObservable : defaultValueIsObservable;
+            this.tagPropertyKey = tagPropertyKey;
         }
     }
 

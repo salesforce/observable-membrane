@@ -399,4 +399,30 @@ describe('ReadOnlyHandler', () => {
             Object.setPrototypeOf(property.foo, {});
         }).toThrow();
     });
+    describe('with tag key property', () => {
+        it('should support tagPropertyKey', () => {
+            const o = {};
+            const target = new ReactiveMembrane({
+                tagPropertyKey: 'foo',
+            });
+
+            const wet = target.getReadOnlyProxy(o);
+            expect(Object.getOwnPropertyNames(wet).length).toBe(1);
+            expect('foo' in wet).toBe(true);
+            expect('foo' in o).toBe(false);
+            expect(wet.foo).toBe(undefined);
+        });
+        it('should not shadow tagPropertyKey if the target has it', () => {
+            const o = { foo: 1 };
+            const target = new ReactiveMembrane({
+                tagPropertyKey: 'foo',
+            });
+
+            const wet = target.getReadOnlyProxy(o);
+            expect(Object.getOwnPropertyNames(wet).length).toBe(1);
+            expect('foo' in wet).toBe(true);
+            expect('foo' in o).toBe(true);
+            expect(wet.foo).toBe(1);
+        });
+    });
 });
