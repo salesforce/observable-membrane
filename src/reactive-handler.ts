@@ -122,13 +122,15 @@ export class ReactiveProxyHandler extends BaseProxyHandler {
     }
     defineProperty(shadowTarget: ReactiveMembraneShadowTarget, key: PropertyKey, descriptor: PropertyDescriptor): boolean {
         const { originalTarget, membrane: { valueMutated, tagPropertyKey } } = this;
-        // To avoid leaking the membrane tag property into the original target, we must
-        // be sure that the original target doesn't have yet
-        if (key !== tagPropertyKey || hasOwnProperty.call(originalTarget, key)) {
-            // in the future, we could use Reflect.defineProperty to know the result of the operation
-            // for now, we assume it was carry on (if originalTarget is a proxy, it could reject the operation)
-            ObjectDefineProperty(originalTarget, key, this.unwrapDescriptor(descriptor));
+        if (key === tagPropertyKey && !hasOwnProperty.call(originalTarget, key)) {
+            // To avoid leaking the membrane tag property into the original target, we must
+            // be sure that the original target doesn't have yet.
+            // NOTE: we do not return false here because Object.freeze and equivalent operations
+            // will attempt to set the descriptor to the same value, and expect no to throw. This
+            // is an small compromise for the sake of not having to diff the descriptors.
+            return true;
         }
+        ObjectDefineProperty(originalTarget, key, this.unwrapDescriptor(descriptor));
         // intentionally testing if false since it could be undefined as well
         if (descriptor.configurable === false) {
             this.copyDescriptorIntoShadowTarget(shadowTarget, key);

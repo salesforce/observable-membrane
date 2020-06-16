@@ -143,6 +143,7 @@ export abstract class BaseProxyHandler {
             // we produce a synthetic descriptor and install it on the shadow target
             desc = { value: undefined, writable: false, configurable: false, enumerable: false };
             ObjectDefineProperty(shadowTarget, tagPropertyKey, desc);
+            return desc;
         }
         if (desc.configurable === false) {
             // updating the descriptor to non-configurable on the shadow

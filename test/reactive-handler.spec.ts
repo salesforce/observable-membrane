@@ -939,5 +939,92 @@ describe('ReactiveHandler', () => {
             const wet = target.getProxy(o);
             expect(Object.getOwnPropertyDescriptor(wet, 'foo')).toMatchObject({ value: undefined, enumerable: false, configurable: false, writable: false });
         });
+        it('should allow dynamic manipulation of the tag key in original target', () => {
+            const o = {};
+            const target = new ReactiveMembrane({
+                tagPropertyKey: '$$MagicKey$$',
+            });
+
+            const wet = target.getProxy(o);
+            // trying to define a non-configurable property
+            Object.defineProperty(wet, '$$MagicKey$$', {
+                value: 'bar',
+                configurable: true
+            });
+
+            expect('$$MagicKey$$' in wet).toBe(true);
+            expect(wet.$$MagicKey$$).toBe(undefined); // because it is non-configurable
+            expect(Object.getOwnPropertyNames(wet)).toEqual(['$$MagicKey$$']);
+            // making sure that you cannot mess with the magic key
+            delete wet["$$MagicKey$$"];
+            expect('$$MagicKey$$' in wet).toBe(true);
+            expect(Object.getOwnPropertyNames(wet)).toEqual(['$$MagicKey$$']);
+        });
+        it('should allow original target to exhibit the tag key as configurable', () => {
+            const dry = {};
+            const target = new ReactiveMembrane({
+                tagPropertyKey: '$$MagicKey$$',
+            });
+
+            const wet = target.getProxy(dry);
+            Object.defineProperty(dry, '$$MagicKey$$', {
+                value: 'bar',
+                configurable: true
+            });
+
+            Object.defineProperty(wet, '$$MagicKey$$', {
+                value: 'baz',
+            });
+
+            expect('$$MagicKey$$' in wet).toBe(true);
+            expect(Object.getOwnPropertyNames(wet)).toEqual(['$$MagicKey$$']);
+            expect(wet.$$MagicKey$$).toBe('baz'); // because the dry has a configurable property the proxy will propagate the change
+            expect((dry as any).$$MagicKey$$).toBe('baz'); // value set on wet propagated to dry
+
+            delete wet["$$MagicKey$$"]
+            // synthetic tag key will kick in
+            expect('$$MagicKey$$' in wet).toBe(true);
+            expect(wet.$$MagicKey$$).toBe(undefined);
+            expect(Object.getOwnPropertyNames(wet)).toEqual(['$$MagicKey$$']);
+
+            // while dry doesn't have anything
+            expect(dry['$$MagicKey$$']).toBe(undefined);
+            expect('$$MagicKey$$' in dry).toBe(false);
+            expect(Object.getOwnPropertyNames(dry)).toEqual([]);
+        });
+        it('should allow original target to exhibit the tag key as non-configurable', () => {
+            const dry = {};
+            const target = new ReactiveMembrane({
+                tagPropertyKey: '$$MagicKey$$',
+            });
+
+            const wet = target.getProxy(dry);
+            Object.defineProperty(dry, '$$MagicKey$$', {
+                value: 'bar',
+                configurable: false
+            });
+
+            expect(() => {
+                // throw because this is strict mode
+                Object.defineProperty(wet, '$$MagicKey$$', {
+                    value: 'baz',
+                });
+            }).toThrow();
+
+            expect('$$MagicKey$$' in wet).toBe(true);
+            expect(Object.getOwnPropertyNames(wet)).toEqual(['$$MagicKey$$']);
+            expect(wet.$$MagicKey$$).toBe('bar'); // because the dry has a non-configurable property the proxy will not propagate the change
+            expect((dry as any).$$MagicKey$$).toBe('bar'); // value set on wet propagated to dry
+
+            expect(() => {
+                // throw because this is strict mode
+                delete wet["$$MagicKey$$"]
+            }).toThrow();
+            // it can't be deleted
+            expect('$$MagicKey$$' in wet).toBe(true);
+            expect(Object.getOwnPropertyNames(wet)).toEqual(['$$MagicKey$$']);
+            expect(wet.$$MagicKey$$).toBe('bar');
+            expect((dry as any).$$MagicKey$$).toBe('bar');
+        });
     });
 });
