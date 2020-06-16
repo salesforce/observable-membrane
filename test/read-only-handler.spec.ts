@@ -289,7 +289,7 @@ describe('ReadOnlyHandler', () => {
             expect(() => {
                 get().foo = '';
             }).toThrow();
-            expect(todos.entry.foo).toEqual('bar');
+            expect((todos as any).entry.foo).toEqual('bar');
         });
         it('readonly proxy prevents mutation when value accessed via data descriptor', () => {
             const target = new ReactiveMembrane();
@@ -305,7 +305,7 @@ describe('ReadOnlyHandler', () => {
             expect( () => {
                 value.foo = '';
             }).toThrow();
-            expect(todos.entry.foo).toEqual('bar');
+            expect((todos as any).entry.foo).toEqual('bar');
         });
         it('readonly proxy prevents access to any setter in descriptor', () => {
             const target = new ReactiveMembrane();

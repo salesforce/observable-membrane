@@ -633,7 +633,7 @@ describe('ReactiveHandler', () => {
             const desc = Object.getOwnPropertyDescriptor(proxy, 'entry');
             const { set, get } = desc;
             set.call(proxy, newValue);
-            expect(todos.entry).toEqual(newValue);
+            expect((todos as any).entry).toEqual(newValue);
             expect(proxy.entry).toEqual(get.call(proxy));
         });
         it('should preserve the identity of the accessors', () => {
