@@ -251,7 +251,7 @@ Create a new membrane.
     * `valueMutated` [Function] [Optional] Callback invoked when an observed property is mutated. This function receives as argument the original target and the property key.
     * `valueDistortion` [Function] [Optional] Callback to apply distortion to the objects present in the object graph. This function receives as argument a newly added object in the object graph.
     * `valueIsObservable` [Function] [Optional] Callback to determine whether or not a value qualifies as a proxy target for the membrane. The default implementation will only observe plain objects (objects with their prototype set to `null` or `Object.prototype`).
-    * tagPropertyKey?: [PropertyKey] [Optional] A valid string or symbol that can be used to identity proxies created by the membrane. This is useful for any kind of debugging tools or object identity mechanism.
+    * `tagPropertyKey` [PropertyKey] [Optional] A valid string or symbol that can be used to identify proxies created by the membrane. This is useful for any kind of debugging tools or object identity mechanism.
 
 
 ### `ObservableMembrane.prototype.getProxy(object)`
