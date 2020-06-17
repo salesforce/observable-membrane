@@ -11,7 +11,8 @@
     "proxy",
     "membrane",
     "observe",
-    "mutation"
+    "mutation",
+    "track"
   ],
   "homepage": "https://github.com/salesforce/observable-membrane",
   "bugs": {

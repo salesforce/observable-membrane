@@ -1,9 +1,10 @@
 # Observable Membrane
+
 Creating robust JavaScript code becomes increasingly important as web applications become more sophisticated. The dynamic nature of JavaScript code at runtime has always presented challenges for developers.
 
 This package implements an observable membrane in JavaScript using Proxies.
 
-A membrane can be created to control access to a module graph, observe what the other part is attempting to do with the objects that were handed over to them, and even distort the way they see the module graph.
+A membrane can be created to observe access to a module graph, observe what the other part is attempting to do with certain objects, and even distort the way they see the module graph.
 
 ## What is a Membrane
 
@@ -17,8 +18,8 @@ One of the prime use-cases for observable membranes is the popular `@observed` o
 
 Additionally, it supports distorting objects within an object graph, which could be used for:
 
-* Avoid leaking symbols and other non-observables objects.
-* Distorting values observed through the membrane.
+* Avoid leaking certain references.
+* Values observed through the membrane can be different representations of the original values.
 
 ### Usage
 
@@ -45,7 +46,7 @@ p.y.z;
 // yields 1
 ```
 
-_Note: If the value that you're accessing via the membrane is an object that can be observed then the membrane will return a new proxy. In the example above, `o.y !== p.y` because it is a proxy that applies the exact same mechanism. In other words, the membrane is applicable to an entire object graph._
+_Note: If the value that you're accessing via the membrane is an object that can be observed, then the membrane will return a proxy around it. In the example above, `o.y !== p.y` because it is a proxy that applies the exact same mechanism. In other words, the membrane is applicable to an entire object graph._
 
 #### Observing Access and Mutations
 
@@ -195,6 +196,44 @@ o.y === membrane.unwrapProxy(p.y);
 // yields true because `membrane.unwrapProxy(p.y)` returns the original target `o.y`
 ```
 
+### Observable Objects
+
+This membrane implementation is tailored for what we call "observable objects", which are objects with basic functionalities that do not require identity to be preserved. Usually any object with the prototype chain set to `Object.prototype` or `null`. You can control what gets wrapped by implementing a custom callback for the `valueIsObservable` option:
+
+```js
+import ObservableMembrane from 'observable-membrane';
+
+const membrane = new ObservableMembrane({
+    valueIsObservable(value) {
+        // intentionally checking for null
+        if (value === null) {
+            return false;
+        }
+
+        // treat all non-object types, including undefined, as non-observable values
+        if (typeof value !== 'object') {
+            return false;
+        }
+
+        if (isArray(value)) {
+            return true;
+        }
+
+        const proto = Reflect.getPrototypeOf(value);
+        return (proto === Object.prototype || proto === null);
+    },
+});
+
+const o = {
+    x: 1
+};
+membrane.getProxy(o) !== o; // yields true because it was wrapped
+
+membrane.getProxy(document) !== document; // yields false because a DOM object is not observable
+```
+
+Note: be very careful about customizing `valueIsObservable`. Any object with methods that requires identity (e.g.: objects with private fields, or methods accessing weakmaps with the `this` value as a key), will simply not work because those methods will be called with the `this` value being the actual proxy.
+
 ## Example
 
 There are [runnable examples](https://github.com/salesforce/observable-membrane/tree/master/examples) in this Git repository. You must build this package as described in the [Contributing Guide](CONTRIBUTING.md) before attempting to run the examples. Additionally, some of the examples might be relying on features that are not supported in all browsers (e.g.: [reactivo-element](https://github.com/salesforce/observable-membrane/tree/master/examples/reactivo-element) example relies on Web Components APIs).
@@ -211,6 +250,8 @@ Create a new membrane.
     * `valueObserved` [Function] [Optional] Callback invoked when an observed  property is accessed. This function receives as argument the original target and the property key.
     * `valueMutated` [Function] [Optional] Callback invoked when an observed property is mutated. This function receives as argument the original target and the property key.
     * `valueDistortion` [Function] [Optional] Callback to apply distortion to the objects present in the object graph. This function receives as argument a newly added object in the object graph.
+    * `valueIsObservable` [Function] [Optional] Callback to determine whether or not a value qualifies as a proxy target for the membrane. The default implementation will only observe plain objects (objects with their prototype set to `null` or `Object.prototype`).
+    * `tagPropertyKey` [PropertyKey] [Optional] A valid string or symbol that can be used to identify proxies created by the membrane. This is useful for any kind of debugging tools or object identity mechanism.
 
 
 ### `ObservableMembrane.prototype.getProxy(object)`
@@ -242,7 +283,7 @@ Unwrap the proxified version of the object from the membrane and return it's ori
 
 ## Limitations and Other Features
 
-* This membrane implementation is tailored for observable objects, which are objects with the prototype chain set to `Object.prototype` or `null`. Any other object is not wrapped in a Proxy by design.
+* Not all objects can be wrapped by this membrane. More information about this in the examples above.
 * Distortion of Symbols and other built-in objects is possible via `valueDistortion` mechanism to avoid leaking internal.
 * The ability for the membrane creator to revoke all proxies within it to prevent further mutations to the underlying objects (aka, membrane shutdown switch) is not supported at the moment.
 * A value mutation that is set to a read-only proxy value is allowed, but the subtree will still be read-only, e.g.: `const p = membrane.getProxy({}); p.abc = membrane.getReadOnlyProxy({}); p.abc.qwe = 1;` will throw because the value assigned to `abc` is still read only.
