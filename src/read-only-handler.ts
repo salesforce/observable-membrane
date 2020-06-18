@@ -1,4 +1,4 @@
-import { unwrap, freeze, isUndefined } from './shared';
+import { unwrap, isUndefined } from './shared';
 import { BaseProxyHandler, ReactiveMembraneShadowTarget } from './base-handler';
 
 const getterMap = new WeakMap<() => any, () => any>();
@@ -71,6 +71,3 @@ export class ReadOnlyHandler extends BaseProxyHandler {
         return false;
     }
 }
-
-// future proxy optimizations
-freeze(ReadOnlyHandler.prototype);

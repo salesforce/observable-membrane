@@ -1,4 +1,4 @@
-import { toString, isArray, unwrap, isExtensible, preventExtensions, ObjectDefineProperty, freeze, hasOwnProperty, isUndefined } from './shared';
+import { toString, isArray, unwrap, isExtensible, preventExtensions, ObjectDefineProperty, hasOwnProperty, isUndefined } from './shared';
 import { BaseProxyHandler, ReactiveMembraneShadowTarget } from './base-handler';
 
 const getterMap = new WeakMap<() => any, () => any>();
@@ -139,6 +139,3 @@ export class ReactiveProxyHandler extends BaseProxyHandler {
         return true;
     }
 }
-
-// future proxy optimizations
-freeze(ReactiveProxyHandler.prototype);
