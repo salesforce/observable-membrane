@@ -11,7 +11,6 @@ const {
     getOwnPropertySymbols,
     preventExtensions,
     hasOwnProperty,
-    freeze,
 } = Object;
 
 const {
@@ -35,7 +34,6 @@ export {
     getOwnPropertySymbols,
     preventExtensions,
     hasOwnProperty,
-    freeze,
 };
 
 const OtS = {}.toString;

@@ -9,7 +9,6 @@ import {
     hasOwnProperty,
     ObjectDefineProperty,
     preventExtensions,
-    freeze,
     ArrayPush,
     ObjectCreate,
 } from './shared';
@@ -24,8 +23,6 @@ export abstract class BaseProxyHandler {
     constructor(membrane: ReactiveMembrane, value: any) {
         this.originalTarget = value;
         this.membrane = membrane;
-        // future proxy optimizations
-        freeze(this);
     }
 
     // Abstract utility methods
@@ -155,6 +152,3 @@ export abstract class BaseProxyHandler {
         return this.wrapDescriptor(desc);
     }
 }
-
-// future proxy optimizations
-freeze(BaseProxyHandler.prototype);
