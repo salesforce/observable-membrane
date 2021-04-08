@@ -1,37 +1,71 @@
 version: 2.1
 
-jobs:
-  build_and_test:
+
+executors:
+  node:
     working_directory: ~/observable-membrane
-
     docker:
-      - image: circleci/node:lts
+      - image: circleci/node:14
 
+
+commands:
+  save_yarn_cache:
+    description: Save Yarn cache for future build
     steps:
-      - checkout
-
-      - restore_cache:
-          keys:
-          - yarn-v4-{{ checksum "yarn.lock" }}
-
-      - run: yarn install --frozen-lockfile
-
       - save_cache:
+          key: yarn-v5-{{ checksum "yarn.lock" }}
           paths:
             - ~/.cache/yarn
-            - node_modules
-            - packages/*/node_modules
-          key: yarn-v4-{{ checksum "yarn.lock" }}
 
+  restore_yarn_cache:
+    description: Restore Yarn cache from previous build
+    steps:
+      - restore_cache:
+          keys:
+            - yarn-v5-{{ checksum "yarn.lock" }}
+
+  save_workspace:
+    description: Save current workspace
+    steps:
+      - persist_to_workspace:
+          root: .
+          paths: .
+
+  load_workspace:
+    description: Load workspace
+    steps:
+      - attach_workspace:
+          at: ~/observable-membrane
+
+
+jobs:
+  build:
+    executor: node
+    steps:
+      - checkout
+      - restore_yarn_cache
       - run:
-          name: Run Linting
+          name: Install dependencies and build
+          command: yarn install --frozen-lockfile
+      - run:
+          name: Run linter
           command: yarn lint
+      - save_yarn_cache
+      - save_workspac
 
+  test:
+    executor: node
+    steps:
+      - load_workspace
       - run:
-          name: Run Unit Tests
-          command: yarn test --ci --maxWorkers=2
+          name: Run unit tests
+          command: yarn test --runInBand
+
 
 workflows:
   build_and_test:
     jobs:
-      - build_and_test
+      - build
+      - test:
+          requires:
+            - build
