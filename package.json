@@ -32,7 +32,9 @@
     "build": "tsc --emitDeclarationOnly && rollup -c",
     "changelog": "yarn changelog:generate && yarn changelog:publish",
     "changelog:generate": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0",
-    "changelog:publish": "git add CHANGELOG.md && git commit -m 'docs(changelog): publish release changelog' && git push"
+    "changelog:publish": "git add CHANGELOG.md && git commit -m 'docs(changelog): publish release changelog' && git push",
+    "release:publish:ci": "./scripts/release/publish.js",
+    "release:version": "./scripts/release/version.js"
   },
   "devDependencies": {
     "@rollup/plugin-replace": "^2.4.1",

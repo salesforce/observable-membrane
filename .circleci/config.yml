@@ -1,6 +1,15 @@
 version: 2.1
 
 
+deploy_filters: &deploy_filters
+  filters:
+    branches:
+      ignore: /.*/
+    tags:
+      # Trigger on tags that begin with `v`
+      only: /^v.*/
+
+
 executors:
   node:
     working_directory: ~/observable-membrane
@@ -61,6 +70,17 @@ jobs:
           name: Run unit tests
           command: yarn test --runInBand
 
+  deploy:
+    executor: node
+    steps:
+      - load_workspace
+      - run:
+          name: Configure NPM authentication
+          command: npm config set "//registry.npmjs.org/:_authToken" "$NPM_AUTOMATION_TOKEN"
+      - run:
+          name: Publish package
+          command: yarn release:publish:ci
+
 
 workflows:
   build_and_test:
@@ -69,3 +89,18 @@ workflows:
       - test:
           requires:
             - build
+
+  build_and_test_and_deploy:
+    jobs:
+      - build:
+          <<: *deploy_filters
+
+      - test:
+          <<: *deploy_filters
+          requires:
+            - build
+
+      - deploy:
+          <<: *deploy_filters
+          requires:
+            - test
