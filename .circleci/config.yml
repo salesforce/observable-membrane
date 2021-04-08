@@ -51,7 +51,7 @@ jobs:
           name: Run linter
           command: yarn lint
       - save_yarn_cache
-      - save_workspac
+      - save_workspace
 
   test:
     executor: node
