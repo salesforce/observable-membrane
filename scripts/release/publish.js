@@ -32,19 +32,14 @@ try {
         console.error(`The commit referenced by "${tag}" is not contained by any release branch.`);
         process.exit(1);
     }
-} catch (ex) {
-    console.error(ex);
-    process.exit(1);
-}
 
-const [, releaseBranch] = result;
-const distTag = releaseBranch === 'master' ? 'next' : releaseBranch;
+    const [, releaseBranch] = result;
+    const distTag = releaseBranch === 'master' ? 'next' : releaseBranch;
 
-console.log(
-    `Attempting to release from branch "${releaseBranch}" using dist-tag "${distTag}".`
-);
+    console.log(
+        `Attempting to release from branch "${releaseBranch}" using dist-tag "${distTag}".`
+    );
 
-try {
     execa.commandSync(`npm publish --tag ${distTag}`);
 } catch (ex) {
     console.error(ex);
