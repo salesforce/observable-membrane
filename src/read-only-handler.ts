@@ -1,4 +1,4 @@
-import { unwrap, isUndefined } from './shared';
+import { unwrap, isArray, isUndefined } from './shared';
 import { BaseProxyHandler, ReactiveMembraneShadowTarget } from './base-handler';
 
 const getterMap = new WeakMap<() => any, () => any>();
@@ -39,7 +39,10 @@ export class ReadOnlyHandler extends BaseProxyHandler {
     set(shadowTarget: ReactiveMembraneShadowTarget, key: PropertyKey, value: any): boolean {
         if (process.env.NODE_ENV !== 'production') {
             const { originalTarget } = this;
-            throw new Error(`Invalid mutation: Cannot set "${key.toString()}" on "${originalTarget}". "${originalTarget}" is read-only.`);
+            const msg = isArray(originalTarget) ?
+                `Invalid mutation: Cannot mutate array at index ${key.toString()}. Array is read-only.` :
+                `Invalid mutation: Cannot set "${key.toString()}" on "${originalTarget}". "${originalTarget}" is read-only.`;
+            throw new Error(msg);
         }
         return false;
     }
