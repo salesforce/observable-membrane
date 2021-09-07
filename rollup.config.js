@@ -27,7 +27,7 @@ function rollupConfig({ formats, prod }) {
             exclude: ['test/*'],
             typescript: require('typescript')
         }),
-        prod !== undefined && replace({ 'process.env.NODE_ENV': replaceToken }),
+        prod !== undefined && replace({ 'process.env.NODE_ENV': replaceToken, preventAssignment: true }),
         prod && terser()
     ].filter(Boolean);
 
@@ -40,7 +40,8 @@ function rollupConfig({ formats, prod }) {
             format,
             banner,
             footer,
-            file: path.join(targetDirectory, targetName)
+            file: path.join(targetDirectory, targetName),
+            exports: 'auto'
         };
     });
 

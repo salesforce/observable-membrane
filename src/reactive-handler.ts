@@ -1,4 +1,14 @@
-import { toString, isArray, unwrap, isExtensible, preventExtensions, ObjectDefineProperty, hasOwnProperty, isUndefined } from './shared';
+import {
+    toString,
+    isArray,
+    unwrap,
+    isExtensible,
+    preventExtensions,
+    ObjectDefineProperty,
+    hasOwnProperty,
+    isUndefined,
+    ProxyPropertyKey
+} from './shared';
 import { BaseProxyHandler, ReactiveMembraneShadowTarget } from './base-handler';
 
 const getterMap = new WeakMap<() => any, () => any>();
@@ -80,7 +90,7 @@ export class ReactiveProxyHandler extends BaseProxyHandler {
         reverseSetterMap.set(redSet, set);;
         return set;
     }
-    set(shadowTarget: ReactiveMembraneShadowTarget, key: PropertyKey, value: any): boolean {
+    set(shadowTarget: ReactiveMembraneShadowTarget, key: ProxyPropertyKey, value: any): boolean {
         const { originalTarget, membrane: { valueMutated } } = this;
         const oldValue = originalTarget[key];
         if (oldValue !== value) {
@@ -95,7 +105,7 @@ export class ReactiveProxyHandler extends BaseProxyHandler {
         }
         return true;
     }
-    deleteProperty(shadowTarget: ReactiveMembraneShadowTarget, key: PropertyKey): boolean {
+    deleteProperty(shadowTarget: ReactiveMembraneShadowTarget, key: ProxyPropertyKey): boolean {
         const { originalTarget, membrane: { valueMutated } } = this;
         delete originalTarget[key];
         valueMutated(originalTarget, key);
@@ -120,7 +130,7 @@ export class ReactiveProxyHandler extends BaseProxyHandler {
         }
         return true;
     }
-    defineProperty(shadowTarget: ReactiveMembraneShadowTarget, key: PropertyKey, descriptor: PropertyDescriptor): boolean {
+    defineProperty(shadowTarget: ReactiveMembraneShadowTarget, key: ProxyPropertyKey, descriptor: PropertyDescriptor): boolean {
         const { originalTarget, membrane: { valueMutated, tagPropertyKey } } = this;
         if (key === tagPropertyKey && !hasOwnProperty.call(originalTarget, key)) {
             // To avoid leaking the membrane tag property into the original target, we must

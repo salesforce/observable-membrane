@@ -66,3 +66,7 @@ export function registerProxy(proxy: object, value: any) {
 }
 
 export const unwrap = (replicaOrAny: any): any => proxyToValueMap.get(replicaOrAny) || replicaOrAny;
+
+// In the specification for Proxy, the keys are defined not as PropertyKeys
+// but as `string | symbol`. See: https://github.com/microsoft/TypeScript/pull/35594
+export type ProxyPropertyKey = string | symbol;

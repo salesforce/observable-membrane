@@ -10,7 +10,7 @@ import {
     ObjectDefineProperty,
     preventExtensions,
     ArrayPush,
-    ObjectCreate,
+    ObjectCreate, ProxyPropertyKey,
 } from './shared';
 import { ReactiveMembrane } from './reactive-membrane';
 
@@ -47,7 +47,7 @@ export abstract class BaseProxyHandler {
         }
         return descriptor;
     }
-    copyDescriptorIntoShadowTarget(shadowTarget: ReactiveMembraneShadowTarget, key: PropertyKey) {
+    copyDescriptorIntoShadowTarget(shadowTarget: ReactiveMembraneShadowTarget, key: ProxyPropertyKey) {
         const { originalTarget } = this;
         // Note: a property might get defined multiple times in the shadowTarget
         //       but it will always be compatible with the previous descriptor
@@ -60,8 +60,8 @@ export abstract class BaseProxyHandler {
     }
     lockShadowTarget(shadowTarget: ReactiveMembraneShadowTarget): void {
         const { originalTarget } = this;
-        const targetKeys: PropertyKey[] = ArrayConcat.call(getOwnPropertyNames(originalTarget), getOwnPropertySymbols(originalTarget));
-        targetKeys.forEach((key: PropertyKey) => {
+        const targetKeys: ProxyPropertyKey[] = ArrayConcat.call(getOwnPropertyNames(originalTarget), getOwnPropertySymbols(originalTarget));
+        targetKeys.forEach((key: ProxyPropertyKey) => {
             this.copyDescriptorIntoShadowTarget(shadowTarget, key);
         });
         const { membrane: { tagPropertyKey } } = this;
@@ -73,11 +73,11 @@ export abstract class BaseProxyHandler {
 
     // Abstract Traps
 
-    abstract set(shadowTarget: ReactiveMembraneShadowTarget, key: PropertyKey, value: any): boolean;
-    abstract deleteProperty(shadowTarget: ReactiveMembraneShadowTarget, key: PropertyKey): boolean;
+    abstract set(shadowTarget: ReactiveMembraneShadowTarget, key: ProxyPropertyKey, value: any): boolean;
+    abstract deleteProperty(shadowTarget: ReactiveMembraneShadowTarget, key: ProxyPropertyKey): boolean;
     abstract setPrototypeOf(shadowTarget: ReactiveMembraneShadowTarget, prototype: any): any;
     abstract preventExtensions(shadowTarget: ReactiveMembraneShadowTarget): boolean;
-    abstract defineProperty(shadowTarget: ReactiveMembraneShadowTarget, key: PropertyKey, descriptor: PropertyDescriptor): boolean;
+    abstract defineProperty(shadowTarget: ReactiveMembraneShadowTarget, key: ProxyPropertyKey, descriptor: PropertyDescriptor): boolean;
 
     // Shared Traps
 
@@ -87,20 +87,20 @@ export abstract class BaseProxyHandler {
     construct(shadowTarget: ReactiveMembraneShadowTarget, argArray: any, newTarget?: any): any {
         /* No op */
     }
-    get(shadowTarget: ReactiveMembraneShadowTarget, key: PropertyKey): any {
+    get(shadowTarget: ReactiveMembraneShadowTarget, key: ProxyPropertyKey): any {
         const { originalTarget, membrane: { valueObserved } } = this;
         const value = originalTarget[key];
         valueObserved(originalTarget, key);
         return this.wrapValue(value);
     }
-    has(shadowTarget: ReactiveMembraneShadowTarget, key: PropertyKey): boolean {
+    has(shadowTarget: ReactiveMembraneShadowTarget, key: ProxyPropertyKey): boolean {
         const { originalTarget, membrane: { tagPropertyKey, valueObserved } } = this;
         valueObserved(originalTarget, key);
         // since key is never going to be undefined, and tagPropertyKey might be undefined
         // we can simply compare them as the second part of the condition.
         return key in originalTarget || key === tagPropertyKey;
     }
-    ownKeys(shadowTarget: ReactiveMembraneShadowTarget): PropertyKey[] {
+    ownKeys(shadowTarget: ReactiveMembraneShadowTarget): ProxyPropertyKey[] {
         const { originalTarget, membrane: { tagPropertyKey } } = this;
         // if the membrane tag key exists and it is not in the original target, we add it to the keys.
         const keys = isUndefined(tagPropertyKey) || hasOwnProperty.call(originalTarget, tagPropertyKey) ? [] : [tagPropertyKey];
@@ -125,7 +125,7 @@ export abstract class BaseProxyHandler {
         const { originalTarget } = this;
         return getPrototypeOf(originalTarget);
     }
-    getOwnPropertyDescriptor(shadowTarget: ReactiveMembraneShadowTarget, key: PropertyKey): PropertyDescriptor | undefined {
+    getOwnPropertyDescriptor(shadowTarget: ReactiveMembraneShadowTarget, key: ProxyPropertyKey): PropertyDescriptor | undefined {
         const { originalTarget, membrane: { valueObserved, tagPropertyKey } } = this;
 
         // keys looked up via getOwnPropertyDescriptor need to be reactive
