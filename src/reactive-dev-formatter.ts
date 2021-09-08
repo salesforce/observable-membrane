@@ -6,7 +6,7 @@ import {
     getPrototypeOf,
     getOwnPropertyNames,
     getOwnPropertySymbols,
-    unwrap
+    unwrap, ProxyPropertyKey
 } from './shared';
 
 // Define globalThis since it's not current defined in by typescript.
@@ -33,7 +33,7 @@ function extract(objectOrArray: any): any {
     const obj = ObjectCreate(getPrototypeOf(objectOrArray));
     const names = getOwnPropertyNames(objectOrArray);
     return ArrayConcat.call(names, getOwnPropertySymbols(objectOrArray))
-        .reduce((seed: any, key: PropertyKey) => {
+        .reduce((seed: any, key: ProxyPropertyKey) => {
             const item = objectOrArray[key];
             const original = unwrap(item);
             if (original !== item) {

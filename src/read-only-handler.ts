@@ -1,4 +1,4 @@
-import { unwrap, isArray, isUndefined } from './shared';
+import {unwrap, isArray, isUndefined, ProxyPropertyKey} from './shared';
 import { BaseProxyHandler, ReactiveMembraneShadowTarget } from './base-handler';
 
 const getterMap = new WeakMap<() => any, () => any>();
@@ -36,7 +36,7 @@ export class ReadOnlyHandler extends BaseProxyHandler {
         setterMap.set(originalSet, set);
         return set;
     }
-    set(shadowTarget: ReactiveMembraneShadowTarget, key: PropertyKey, value: any): boolean {
+    set(shadowTarget: ReactiveMembraneShadowTarget, key: ProxyPropertyKey, value: any): boolean {
         if (process.env.NODE_ENV !== 'production') {
             const { originalTarget } = this;
             const msg = isArray(originalTarget) ?
@@ -46,7 +46,7 @@ export class ReadOnlyHandler extends BaseProxyHandler {
         }
         return false;
     }
-    deleteProperty(shadowTarget: ReactiveMembraneShadowTarget, key: PropertyKey): boolean {
+    deleteProperty(shadowTarget: ReactiveMembraneShadowTarget, key: ProxyPropertyKey): boolean {
         if (process.env.NODE_ENV !== 'production') {
             const { originalTarget } = this;
             throw new Error(`Invalid mutation: Cannot delete "${key.toString()}" on "${originalTarget}". "${originalTarget}" is read-only.`);
@@ -66,7 +66,7 @@ export class ReadOnlyHandler extends BaseProxyHandler {
         }
         return false;
     }
-    defineProperty(shadowTarget: ReactiveMembraneShadowTarget, key: PropertyKey, descriptor: PropertyDescriptor): boolean {
+    defineProperty(shadowTarget: ReactiveMembraneShadowTarget, key: ProxyPropertyKey, descriptor: PropertyDescriptor): boolean {
         if (process.env.NODE_ENV !== 'production') {
             const { originalTarget } = this;
             throw new Error(`Invalid mutation: Cannot defineProperty "${key.toString()}" on "${originalTarget}". "${originalTarget}" is read-only.`);

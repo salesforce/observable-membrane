@@ -25,11 +25,10 @@ function rollupConfig({ formats, prod }) {
             tsconfig: false,
             target: 'es2016',
             exclude: ['test/*'],
-            typescript: require('typescript')
         }),
-        prod !== undefined && replace({ 'process.env.NODE_ENV': replaceToken }),
+        prod !== undefined && replace({ 'process.env.NODE_ENV': replaceToken, preventAssignment: true }),
         prod && terser()
-    ].filter(Boolean);
+    ];
 
     const output = formats.map(format => {
         const targetDirectory = format === 'umd' ? umdDir : format === 'cjs' ? cjsDir : modulesDir;
@@ -40,7 +39,8 @@ function rollupConfig({ formats, prod }) {
             format,
             banner,
             footer,
-            file: path.join(targetDirectory, targetName)
+            file: path.join(targetDirectory, targetName),
+            exports: 'auto'
         };
     });
 

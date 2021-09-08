@@ -595,8 +595,8 @@ describe('ReactiveHandler', () => {
             expect(proxy.foo).toBe(expected);
 
             const desc = Object.getOwnPropertyDescriptor(proxy, 'foo');
-            const { get } = desc;
-            expect(get()).toBe(expected);
+            const { get } = desc!;
+            expect(get!()).toBe(expected);
         });
         it('should return reactive proxy when property value accessed via data descriptor', () => {
             const target = new ReactiveMembrane();
@@ -612,7 +612,7 @@ describe('ReactiveHandler', () => {
             expect(proxy.foo).toBe(expected);
 
             const desc = Object.getOwnPropertyDescriptor(proxy, 'foo');
-            const { value } = desc;
+            const { value } = desc!;
             expect(value).toBe(expected);
         });
         it('should allow set invocation via descriptor', () => {
@@ -631,10 +631,10 @@ describe('ReactiveHandler', () => {
             });
             const proxy = target.getProxy(todos);
             const desc = Object.getOwnPropertyDescriptor(proxy, 'entry');
-            const { set, get } = desc;
-            set.call(proxy, newValue);
+            const { set, get } = desc!;
+            set!.call(proxy, newValue);
             expect((todos as any).entry).toEqual(newValue);
-            expect(proxy.entry).toEqual(get.call(proxy));
+            expect(proxy.entry).toEqual(get!.call(proxy));
         });
         it('should preserve the identity of the accessors', () => {
             const target = new ReactiveMembrane();
@@ -643,7 +643,7 @@ describe('ReactiveHandler', () => {
             function get() {
                 return value;
             }
-            function set(v) {
+            function set(v: any) {
                 value = v;
             }
             Object.defineProperty(todos, 'entry', {
@@ -653,13 +653,13 @@ describe('ReactiveHandler', () => {
             });
             const proxy = target.getProxy(todos);
             const proxyDesc = Object.getOwnPropertyDescriptor(proxy, 'entry');
-            Object.defineProperty(proxy, 'newentry', proxyDesc);
+            Object.defineProperty(proxy, 'newentry', proxyDesc!);
             const copiedDesc = Object.getOwnPropertyDescriptor(todos, 'newentry');
             const proxyCopiedDesc = Object.getOwnPropertyDescriptor(proxy, 'newentry');
-            expect(copiedDesc.get).toEqual(get);
-            expect(copiedDesc.set).toEqual(set);
-            expect(proxyDesc.get).toEqual(proxyCopiedDesc.get);
-            expect(proxyDesc.set).toEqual(proxyCopiedDesc.set);
+            expect(copiedDesc!.get).toEqual(get);
+            expect(copiedDesc!.set).toEqual(set);
+            expect(proxyDesc!.get).toEqual(proxyCopiedDesc!.get);
+            expect(proxyDesc!.set).toEqual(proxyCopiedDesc!.set);
         });
         it('should protect against leaking accessors into the blue side', () => {
             const target = new ReactiveMembrane();
@@ -667,11 +667,11 @@ describe('ReactiveHandler', () => {
             let value = 0;
             let getterThisValue = null;
             let setterThisValue = null;
-            function get() {
+            function get(this: any) {
                 getterThisValue = this;
                 return value;
             }
-            function set(v) {
+            function set(this: any, v: any) {
                 setterThisValue = this;
                 value = v;
             }
@@ -683,8 +683,8 @@ describe('ReactiveHandler', () => {
                 configurable: true
             });
             const proxyDesc = Object.getOwnPropertyDescriptor(proxy, 'entry');
-            expect(proxyDesc.get).toEqual(get);
-            expect(proxyDesc.set).toEqual(set);
+            expect(proxyDesc!.get).toEqual(get);
+            expect(proxyDesc!.set).toEqual(set);
             expect(proxy.entry).toBe(0);
             expect(getterThisValue).toBe(proxy);
             proxy.entry = 1;
@@ -693,10 +693,10 @@ describe('ReactiveHandler', () => {
             expect(proxy.entry).toBe(1);
             // interacting with real target
             const desc = Object.getOwnPropertyDescriptor(todos, 'entry');
-            expect(desc.get).not.toEqual(get);
-            expect(desc.set).not.toEqual(set);
-            expect(desc.get).toEqual(Object.getOwnPropertyDescriptor(todos, 'entry').get); // identity
-            expect(desc.set).toEqual(Object.getOwnPropertyDescriptor(todos, 'entry').set); // identity
+            expect(desc!.get).not.toEqual(get);
+            expect(desc!.set).not.toEqual(set);
+            expect(desc!.get).toEqual(Object.getOwnPropertyDescriptor(todos, 'entry')!.get); // identity
+            expect(desc!.set).toEqual(Object.getOwnPropertyDescriptor(todos, 'entry')!.set); // identity
             expect((todos as any).entry).toBe(1);
             expect(getterThisValue).toBe(proxy);
             (todos as any).entry = 2;
@@ -726,14 +726,14 @@ describe('ReactiveHandler', () => {
             const proxy = target.getProxy(todos);
             expect(proxy.foo).toBe(expected);
 
-            const desc = Object.getOwnPropertyDescriptor(proxy, 'foo');
+            Object.getOwnPropertyDescriptor(proxy, 'foo');
             expect(observedKey).toBe('foo');
             expect(observedTarget).toBe(todos);
         });
     });
 
     describe('values that do not need to be wrapped', () => {
-        let target;
+        let target: any;
         beforeEach(() => {
             target = new ReactiveMembrane();
         });
@@ -752,6 +752,7 @@ describe('ReactiveHandler', () => {
             expect(state.foo).toBe(foo);
         });
         it.each(
+            // tslint:disable-next-line:no-empty
             [undefined, null, 'foo', true, false, 1, Symbol(), () => {}]
             )('should not treat following value as reactive: %s', (value) => {
             expect(target.getProxy(value)).toBe(value);
@@ -759,18 +760,18 @@ describe('ReactiveHandler', () => {
     });
 
     describe('handles array type values', () => {
-        let defaultMembrane;
+        let defaultMembrane: any;
         beforeEach(() => {
             defaultMembrane = new ReactiveMembrane();
         });
         it('wraps array', () => {
-            const value = []
+            const value: any[] = []
             const proxy = defaultMembrane.getProxy(value);
             expect(proxy).not.toBe(value);
             expect(defaultMembrane.unwrapProxy(value)).toBe(value);
         });
         it('access allow length mutations', () => {
-            const value = [];
+            const value: any[] = [];
             const proxy = defaultMembrane.getProxy(value);
             expect(Array.isArray(proxy)).toBe(true);
             expect(proxy.length).toBe(0);
@@ -781,14 +782,14 @@ describe('ReactiveHandler', () => {
             expect(proxy[1]).toBe('another');
         });
         it('access length descriptor', () => {
-            const value = [];
+            const value: any[] = [];
             const proxy = defaultMembrane.getProxy(value);
             expect(Array.isArray(proxy)).toBe(true);
-            expect(Object.getOwnPropertyDescriptor(proxy, 'length').value).toBe(0);
+            expect(Object.getOwnPropertyDescriptor(proxy, 'length')!.value).toBe(0);
             proxy.length = 1;
-            expect(Object.getOwnPropertyDescriptor(proxy, 'length').value).toBe(1);
+            expect(Object.getOwnPropertyDescriptor(proxy, 'length')!.value).toBe(1);
             proxy[1] = 'another';
-            expect(Object.getOwnPropertyDescriptor(proxy, 'length').value).toBe(2);
+            expect(Object.getOwnPropertyDescriptor(proxy, 'length')!.value).toBe(2);
             expect(proxy[1]).toBe('another');
         });
         it('access items in array', () => {
@@ -805,7 +806,7 @@ describe('ReactiveHandler', () => {
             const observedMembrane = new ReactiveMembrane({
                 valueObserved: accessSpy,
             });
-    
+
             const proxy = observedMembrane.getProxy(value);
             doNothing(proxy[0]);
             doNothing(proxy[1]);
@@ -815,9 +816,9 @@ describe('ReactiveHandler', () => {
         });
 
         describe('access values in array', () => {
-            let membrane;
-            let accessSpy;
-            let changeSpy;
+            let membrane: any;
+            let accessSpy: any;
+            let changeSpy: any;
             beforeEach(() => {
                 accessSpy = jest.fn();
                 changeSpy = jest.fn();
@@ -854,8 +855,8 @@ describe('ReactiveHandler', () => {
             });
         });
         describe('should be notified on array mutation', () => {
-            let membrane;
-            let changeSpy;
+            let membrane: any;
+            let changeSpy: any;
             beforeEach(() => {
                 changeSpy = jest.fn();
                 membrane = new ReactiveMembrane({
@@ -956,7 +957,7 @@ describe('ReactiveHandler', () => {
             expect(wet.$$MagicKey$$).toBe(undefined); // because it is non-configurable
             expect(Object.getOwnPropertyNames(wet)).toEqual(['$$MagicKey$$']);
             // making sure that you cannot mess with the magic key
-            delete wet["$$MagicKey$$"];
+            delete wet.$$MagicKey$$;
             expect('$$MagicKey$$' in wet).toBe(true);
             expect(Object.getOwnPropertyNames(wet)).toEqual(['$$MagicKey$$']);
         });
@@ -981,14 +982,14 @@ describe('ReactiveHandler', () => {
             expect(wet.$$MagicKey$$).toBe('baz'); // because the dry has a configurable property the proxy will propagate the change
             expect((dry as any).$$MagicKey$$).toBe('baz'); // value set on wet propagated to dry
 
-            delete wet["$$MagicKey$$"]
+            delete wet.$$MagicKey$$
             // synthetic tag key will kick in
             expect('$$MagicKey$$' in wet).toBe(true);
             expect(wet.$$MagicKey$$).toBe(undefined);
             expect(Object.getOwnPropertyNames(wet)).toEqual(['$$MagicKey$$']);
 
             // while dry doesn't have anything
-            expect(dry['$$MagicKey$$']).toBe(undefined);
+            expect((dry as any).$$MagicKey$$).toBe(undefined);
             expect('$$MagicKey$$' in dry).toBe(false);
             expect(Object.getOwnPropertyNames(dry)).toEqual([]);
         });
@@ -1018,7 +1019,7 @@ describe('ReactiveHandler', () => {
 
             expect(() => {
                 // throw because this is strict mode
-                delete wet["$$MagicKey$$"]
+                delete wet.$$MagicKey$$
             }).toThrow();
             // it can't be deleted
             expect('$$MagicKey$$' in wet).toBe(true);

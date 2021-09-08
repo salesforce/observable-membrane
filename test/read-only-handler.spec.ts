@@ -285,9 +285,9 @@ describe('ReadOnlyHandler', () => {
 
             const proxy = target.getReadOnlyProxy(todos);
             const desc = Object.getOwnPropertyDescriptor(proxy, 'entry');
-            const { get } = desc;
+            const { get } = desc!;
             expect(() => {
-                get().foo = '';
+                get!().foo = '';
             }).toThrow();
             expect((todos as any).entry.foo).toEqual('bar');
         });
@@ -301,7 +301,7 @@ describe('ReadOnlyHandler', () => {
 
             const proxy = target.getReadOnlyProxy(todos);
             const desc = Object.getOwnPropertyDescriptor(proxy, 'entry');
-            const { value } = desc;
+            const { value } = desc!;
             expect( () => {
                 value.foo = '';
             }).toThrow();
@@ -322,11 +322,11 @@ describe('ReadOnlyHandler', () => {
             });
             const proxy = target.getReadOnlyProxy(todos);
             const desc = Object.getOwnPropertyDescriptor(proxy, 'entry');
-            const { set, get } = desc;
+            const { set, get } = desc!;
             expect(() => {
-                set.call(proxy, 1);
+                set!.call(proxy, 1);
             }).toThrow();
-            expect(get.call(proxy)).toEqual(0);
+            expect(get!.call(proxy)).toEqual(0);
         });
         it('should preserve the identity of the accessors', () => {
             const target = new ReactiveMembrane();
@@ -335,7 +335,7 @@ describe('ReadOnlyHandler', () => {
             function get() {
                 return value;
             }
-            function set(v) {
+            function set(v: any) {
                 value = v;
             }
             Object.defineProperty(todos, 'entry', {
@@ -351,8 +351,8 @@ describe('ReadOnlyHandler', () => {
             const proxy = target.getReadOnlyProxy(todos);
             const proxyDesc = Object.getOwnPropertyDescriptor(proxy, 'entry');
             const proxyCopiedDesc = Object.getOwnPropertyDescriptor(proxy, 'newentry');
-            expect(proxyDesc.get).toEqual(proxyCopiedDesc.get);
-            expect(proxyDesc.set).toEqual(proxyCopiedDesc.set);
+            expect(proxyDesc!.get).toEqual(proxyCopiedDesc!.get);
+            expect(proxyDesc!.set).toEqual(proxyCopiedDesc!.set);
         });
         it('should be reactive when descriptor is accessed', () => {
             let observedTarget;
@@ -376,7 +376,7 @@ describe('ReadOnlyHandler', () => {
             const proxy = target.getProxy(todos);
             expect(proxy.foo).toBe(expected);
 
-            const desc = Object.getOwnPropertyDescriptor(proxy, 'foo');
+            Object.getOwnPropertyDescriptor(proxy, 'foo');
             expect(observedKey).toBe('foo');
             expect(observedTarget).toBe(todos);
         });
@@ -427,7 +427,7 @@ describe('ReadOnlyHandler', () => {
     });
     it('should throw a helpful message when attempting to mutate an array', function () {
         const target = new ReactiveMembrane();
-        const obj = [];
+        const obj: any[] = [];
         const property = target.getReadOnlyProxy(obj);
         expect(() => {
             property.push("some object");

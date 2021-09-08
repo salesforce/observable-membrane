@@ -5,7 +5,7 @@ import {
     isUndefined,
     getPrototypeOf,
     isFunction,
-    registerProxy,
+    registerProxy, ProxyPropertyKey,
 } from './shared';
 import { ReactiveProxyHandler } from './reactive-handler';
 import { ReadOnlyHandler } from './read-only-handler';
@@ -20,8 +20,8 @@ interface ReactiveState {
     reactive: any;
 }
 
-export type ReactiveMembraneAccessCallback = (obj: any, key: PropertyKey) => void;
-export type ReactiveMembraneMutationCallback = (obj: any, key: PropertyKey) => void;
+export type ReactiveMembraneAccessCallback = (obj: any, key: ProxyPropertyKey) => void;
+export type ReactiveMembraneMutationCallback = (obj: any, key: ProxyPropertyKey) => void;
 export type ReactiveMembraneDistortionCallback = (value: any) => any;
 export type ReactiveMembraneObservableCallback = (value: any) => boolean;
 
@@ -30,7 +30,7 @@ export interface ObservableMembraneInit {
     valueObserved?: ReactiveMembraneAccessCallback;
     valueDistortion?: ReactiveMembraneDistortionCallback;
     valueIsObservable?: ReactiveMembraneObservableCallback;
-    tagPropertyKey?: PropertyKey;
+    tagPropertyKey?: ProxyPropertyKey;
 }
 
 const ObjectDotPrototype = Object.prototype;
@@ -54,10 +54,10 @@ function defaultValueIsObservable(value: any): boolean {
     return (proto === ObjectDotPrototype || proto === null || getPrototypeOf(proto) === null);
 }
 
-const defaultValueObserved: ReactiveMembraneAccessCallback = (obj: any, key: PropertyKey) => {
+const defaultValueObserved: ReactiveMembraneAccessCallback = (obj: any, key: ProxyPropertyKey) => {
     /* do nothing */
 };
-const defaultValueMutated: ReactiveMembraneMutationCallback = (obj: any, key: PropertyKey) => {
+const defaultValueMutated: ReactiveMembraneMutationCallback = (obj: any, key: ProxyPropertyKey) => {
     /* do nothing */
 };
 const defaultValueDistortion: ReactiveMembraneDistortionCallback = (value: any) => value;
@@ -71,7 +71,7 @@ export class ReactiveMembrane {
     valueMutated: ReactiveMembraneMutationCallback = defaultValueMutated;
     valueObserved: ReactiveMembraneAccessCallback = defaultValueObserved;
     valueIsObservable: ReactiveMembraneObservableCallback = defaultValueIsObservable;
-    tagPropertyKey: PropertyKey | undefined;
+    tagPropertyKey: ProxyPropertyKey | undefined;
     private objectGraph: WeakMap<any, ReactiveState> = new WeakMap();
 
     constructor(options?: ObservableMembraneInit) {
