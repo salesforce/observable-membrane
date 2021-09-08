@@ -29,7 +29,7 @@ function rollupConfig({ formats, prod }) {
         }),
         prod !== undefined && replace({ 'process.env.NODE_ENV': replaceToken, preventAssignment: true }),
         prod && terser()
-    ].filter(Boolean);
+    ];
 
     const output = formats.map(format => {
         const targetDirectory = format === 'umd' ? umdDir : format === 'cjs' ? cjsDir : modulesDir;
