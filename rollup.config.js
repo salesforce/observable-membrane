@@ -25,7 +25,6 @@ function rollupConfig({ formats, prod }) {
             tsconfig: false,
             target: 'es2016',
             exclude: ['test/*'],
-            typescript: require('typescript')
         }),
         prod !== undefined && replace({ 'process.env.NODE_ENV': replaceToken, preventAssignment: true }),
         prod && terser()
