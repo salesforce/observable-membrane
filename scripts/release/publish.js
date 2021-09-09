@@ -40,7 +40,7 @@ try {
         `Attempting to release from branch "${releaseBranch}" using dist-tag "${distTag}".`
     );
 
-    execa.commandSync(`npm publish --tag ${distTag}`);
+    execa.commandSync(`npm publish --tag ${distTag} --registry=https://registry.npmjs.org`);
 } catch (ex) {
     console.error(ex);
     process.exit(1);
