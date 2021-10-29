@@ -84,10 +84,12 @@ export class ReactiveMembrane {
         const unwrappedValue = unwrap(value);
         const distorted = this.valueDistortion(unwrappedValue);
         if (this.valueIsObservable(distorted)) {
-            const readOnly = this.getReactiveHandler(unwrappedValue, distorted, true);
-            // when trying to extract the writable version of a readonly
-            // we return the readonly.
-            return readOnly === value ? value : this.getReactiveHandler(unwrappedValue, distorted, false);
+            if (this.readOnlyObjectGraph.get(distorted) === value) {
+                // when trying to extract the writable version of a readonly
+                // we return the readonly.
+                return value
+            }
+            return this.getReactiveHandler(unwrappedValue, distorted, false);
         }
         return distorted;
     }

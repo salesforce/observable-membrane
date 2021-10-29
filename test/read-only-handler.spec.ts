@@ -425,4 +425,19 @@ describe('ReadOnlyHandler', () => {
             expect(wet.foo).toBe(1);
         });
     });
+    it('should throw a helpful message when attempting to mutate an array', function () {
+        const target = new ReactiveMembrane();
+        const obj: any[] = [];
+        const property = target.getReadOnlyProxy(obj);
+        expect(() => {
+            property.push("some object");
+        }).toThrowErrorMatchingInlineSnapshot(
+            `"Invalid mutation: Cannot mutate array at index 0. Array is read-only."`
+        );
+    });
+    it('should return undefined when input is undefined', () => {
+        const target = new ReactiveMembrane();
+        const state = target.getReadOnlyProxy(undefined);
+        expect(state).toBe(undefined);
+    });
 });
