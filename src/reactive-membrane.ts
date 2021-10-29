@@ -119,6 +119,6 @@ export class ReactiveMembrane {
             registerProxy(proxy, value);
             objectGraph.set(distortedValue, proxy);
         }
-        return proxy
+        return proxy;
     }
 }
