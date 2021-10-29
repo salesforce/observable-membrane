@@ -87,7 +87,7 @@ export class ReactiveMembrane {
             if (this.readOnlyObjectGraph.get(distorted) === value) {
                 // when trying to extract the writable version of a readonly
                 // we return the readonly.
-                return value
+                return value;
             }
             return this.getReactiveHandler(unwrappedValue, distorted, false);
         }
