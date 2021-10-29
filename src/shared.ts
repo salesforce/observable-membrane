@@ -4,7 +4,6 @@ const {
     getPrototypeOf,
     create: ObjectCreate,
     defineProperty: ObjectDefineProperty,
-    defineProperties: ObjectDefineProperties,
     isExtensible,
     getOwnPropertyDescriptor,
     getOwnPropertyNames,
@@ -16,18 +15,15 @@ const {
 const {
     push: ArrayPush,
     concat: ArrayConcat,
-    map: ArrayMap,
 } = Array.prototype;
 
 export {
     ArrayPush,
     ArrayConcat,
-    ArrayMap,
     isArray,
     getPrototypeOf,
     ObjectCreate,
     ObjectDefineProperty,
-    ObjectDefineProperties,
     isExtensible,
     getOwnPropertyDescriptor,
     getOwnPropertyNames,
@@ -53,10 +49,6 @@ export function isUndefined(obj: any): obj is undefined {
 
 export function isFunction(obj: any): obj is Function {
     return typeof obj === 'function';
-}
-
-export function isObject(obj: any): obj is object {
-    return typeof obj === 'object';
 }
 
 const proxyToValueMap: WeakMap<object, any> = new WeakMap();
