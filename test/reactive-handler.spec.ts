@@ -1028,4 +1028,9 @@ describe('ReactiveHandler', () => {
             expect((dry as any).$$MagicKey$$).toBe('bar');
         });
     });
+    it('should return undefined when input is undefined', () => {
+        const target = new ReactiveMembrane();
+        const state = target.getProxy(undefined);
+        expect(state).toBe(undefined);
+    });
 });
