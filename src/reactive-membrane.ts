@@ -108,7 +108,7 @@ export class ReactiveMembrane {
     }
 
     private getReactiveHandler(value: any, distortedValue: any, readOnly: boolean): any {
-        const objectGraph = readOnly ? this.readOnlyObjectGraph : this.reactiveObjectGraph
+        const objectGraph = readOnly ? this.readOnlyObjectGraph : this.reactiveObjectGraph;
         let proxy = objectGraph.get(distortedValue);
         if (isUndefined(proxy)) {
             // caching the proxy after the first time it is accessed
