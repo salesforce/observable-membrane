@@ -1,6 +1,6 @@
 {
   "name": "observable-membrane",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A Javascript Membrane implementation using Proxies to observe mutation on an object graph",
   "main": "dist/commonjs/observable-membrane.js",
   "module": "dist/modules/observable-membrane.js",
