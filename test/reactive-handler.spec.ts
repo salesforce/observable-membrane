@@ -193,13 +193,7 @@ describe('ReactiveHandler', () => {
     });
     it('should handle extensible correctly when target is frozen', function() {
         const target = new ReactiveMembrane();
-        const hello = {
-            hello: 'world'
-        };
-
-        const obj = {
-            hello
-        };
+        const obj = {};
 
         const wrapped = target.getProxy(obj);
         Object.freeze(wrapped);
@@ -207,13 +201,7 @@ describe('ReactiveHandler', () => {
     });
     it('should handle extensible correctly when original target is frozen', function() {
         const target = new ReactiveMembrane();
-        const hello = {
-            hello: 'world'
-        };
-
-        const obj = Object.freeze({
-            hello
-        });
+        const obj = Object.freeze({});
 
         const wrapped = target.getProxy(obj);
         expect(Object.isExtensible(wrapped)).toBe(false);
