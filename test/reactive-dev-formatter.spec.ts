@@ -48,6 +48,6 @@ describe('reactive dev formatter', function() {
 
     it('body is always null', () => {
         expect((window as any).devtoolsFormatters[0].hasBody({})).toBe(false);
-        expect((window as any).devtoolsFormatters[0].body({})).toBe(null);
+        expect((window as any).devtoolsFormatters[0].body({})).toBeNull();
     });
 });
