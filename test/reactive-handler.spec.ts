@@ -890,6 +890,7 @@ describe('ReactiveHandler', () => {
 
             expect(property.foo).toEqual([]);
 
+            // Explicitly set the length twice, to trigger the code path for unchanged values
             property.foo.length = 0;
 
             expect(property.foo).toEqual([]);
@@ -905,6 +906,7 @@ describe('ReactiveHandler', () => {
             expect([...property.foo]).toEqual(['bar', 'baz']);
             expect(property.foo.expando).toEqual(0);
 
+            // Explicitly set the expando twice, to trigger the code path for unchanged values
             property.foo.expando = 0;
 
             expect([...property.foo]).toEqual(['bar', 'baz']);
