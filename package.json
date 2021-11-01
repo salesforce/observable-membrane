@@ -30,6 +30,7 @@
     "test": "jest --config jest.config.js --coverage",
     "prebuild": "rm -rf dist",
     "build": "tsc --emitDeclarationOnly && rollup -c",
+    "prepare": "yarn build",
     "changelog": "yarn changelog:generate && yarn changelog:publish",
     "changelog:generate": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0",
     "changelog:publish": "git add CHANGELOG.md && git commit -m 'docs(changelog): publish release changelog' && git push",
