@@ -129,7 +129,17 @@ describe('ReadOnlyHandler', () => {
             });
         }).toThrow();
     });
+    it('setPrototypeOf should throw', function() {
+        const target = new ReactiveMembrane();
+        const obj = {
+            foo: 'bar'
+        };
+        const property = target.getReadOnlyProxy(obj);
 
+        expect(() => {
+            Object.setPrototypeOf(property, {});
+        }).toThrow();
+    });
     it('should handle Object.getOwnPropertyNames correctly', function() {
         const target = new ReactiveMembrane();
         const obj = {

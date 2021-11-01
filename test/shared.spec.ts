@@ -1,4 +1,5 @@
 import { ReactiveMembrane } from '../src/reactive-membrane';
+import { toString } from '../src/shared';
 
 describe('#defaultValueObservable', function() {
     const isObservable = new ReactiveMembrane().valueIsObservable;
@@ -65,5 +66,15 @@ describe('#defaultValueObservable', function() {
         document.body.appendChild(iframe);
         const obj = (iframe.contentWindow as any).eval('({})');
         expect(isObservable(obj)).toBe(true);
+    });
+
+    it('toString() works objects without toString()', () => {
+        const obj = Object.create(null);
+        obj.foo = 'bar';
+        expect(toString(obj)).toEqual(toString({ foo: 'bar' }))
+    });
+
+    it('toString() works for undefined', () => {
+        expect(toString(undefined)).toEqual(undefined + '');
     });
 });

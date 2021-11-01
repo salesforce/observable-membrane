@@ -53,6 +53,8 @@ export abstract class BaseProxyHandler {
         //       but it will always be compatible with the previous descriptor
         //       to preserve the object invariants, which makes these lines safe.
         const originalDescriptor = getOwnPropertyDescriptor(originalTarget, key);
+        // TODO: it should be impossible for the originalDescriptor to ever be undefined, this `if` can be removed
+        /* istanbul ignore else */
         if (!isUndefined(originalDescriptor)) {
             const wrappedDesc = this.wrapDescriptor(originalDescriptor);
             ObjectDefineProperty(shadowTarget, key, wrappedDesc);
@@ -81,9 +83,13 @@ export abstract class BaseProxyHandler {
 
     // Shared Traps
 
+    // TODO: apply() is never called
+    /* istanbul ignore next */
     apply(shadowTarget: ReactiveMembraneShadowTarget, thisArg: any, argArray: any[]) {
         /* No op */
     }
+    // TODO: construct() is never called
+    /* istanbul ignore next */
     construct(shadowTarget: ReactiveMembraneShadowTarget, argArray: any, newTarget?: any): any {
         /* No op */
     }
