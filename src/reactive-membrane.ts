@@ -89,7 +89,7 @@ export class ReactiveMembrane {
                 // we return the readonly.
                 return value;
             }
-            return this.getReactiveHandler(unwrappedValue, distorted, false);
+            return this.getReactiveHandler(unwrappedValue, distorted);
         }
         return distorted;
     }
@@ -98,7 +98,7 @@ export class ReactiveMembrane {
         value = unwrap(value);
         const distorted = this.valueDistortion(value);
         if (this.valueIsObservable(distorted)) {
-            return this.getReactiveHandler(value, distorted, true);
+            return this.getReadOnlyHandler(value, distorted);
         }
         return distorted;
     }
@@ -107,17 +107,26 @@ export class ReactiveMembrane {
         return unwrap(p);
     }
 
-    private getReactiveHandler(value: any, distortedValue: any, readOnly: boolean): any {
-        const objectGraph = readOnly ? this.readOnlyObjectGraph : this.reactiveObjectGraph;
-        let proxy = objectGraph.get(distortedValue);
+    private getReactiveHandler(value: any, distortedValue: any): any {
+        let proxy = this.reactiveObjectGraph.get(distortedValue);
         if (isUndefined(proxy)) {
             // caching the proxy after the first time it is accessed
-            const handler = readOnly
-                ? new ReadOnlyHandler(this, distortedValue)
-                : new ReactiveProxyHandler(this, distortedValue);
+            const handler = new ReactiveProxyHandler(this, distortedValue);
             proxy = new Proxy(createShadowTarget(distortedValue), handler);
             registerProxy(proxy, value);
-            objectGraph.set(distortedValue, proxy);
+            this.reactiveObjectGraph.set(distortedValue, proxy);
+        }
+        return proxy;
+    }
+
+    private getReadOnlyHandler(value: any, distortedValue: any): any {
+        let proxy = this.readOnlyObjectGraph.get(distortedValue);
+        if (isUndefined(proxy)) {
+            // caching the proxy after the first time it is accessed
+            const handler = new ReadOnlyHandler(this, distortedValue);
+            proxy = new Proxy(createShadowTarget(distortedValue), handler);
+            registerProxy(proxy, value);
+            this.readOnlyObjectGraph.set(distortedValue, proxy);
         }
         return proxy;
     }
