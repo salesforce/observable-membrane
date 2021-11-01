@@ -54,7 +54,7 @@ jobs:
       - checkout
       - restore_yarn_cache
       - run:
-          name: Install dependencies and build
+          name: Install dependencies
           command: yarn install --frozen-lockfile
       - run:
           name: Run linter
@@ -69,7 +69,6 @@ jobs:
       - run:
           name: Run unit tests
           command: yarn test --runInBand
-      - save_workspace
 
   deploy:
     executor: node
