@@ -54,7 +54,7 @@ jobs:
       - checkout
       - restore_yarn_cache
       - run:
-          name: Install dependencies
+          name: Install dependencies and build
           command: yarn install --frozen-lockfile
       - run:
           name: Run linter
