@@ -69,11 +69,15 @@ jobs:
       - run:
           name: Run unit tests
           command: yarn test --runInBand
+      - save_workspace
 
   deploy:
     executor: node
     steps:
       - load_workspace
+      - run:
+          name: Check that publishable files exist
+          command: ls ./dist/commonjs/observable-membrane.js
       - run:
           name: Configure NPM authentication
           command: npm config set "//registry.npmjs.org/:_authToken" "$NPM_AUTOMATION_TOKEN"
