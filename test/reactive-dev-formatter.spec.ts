@@ -13,16 +13,41 @@ describe('reactive dev formatter', function() {
     it('should return correct object when given reactive proxy', function() {
         const el = document.createElement('div');
         const reactiveMembrane = new ReactiveMembrane();
-        const proxy = reactiveMembrane.getProxy({ foo: 'bar', el });
+        const proxy = reactiveMembrane.getProxy({ foo: 'bar', el, baz: { quux: 'quux' } });
         const result = (window as any).devtoolsFormatters[0].header(proxy);
         expect(result).toEqual([
             'object', {
                 object: {
                     foo: 'bar',
-                    el
+                    baz: { quux: 'quux' },
+                    el,
                 }
             }
         ]);
         expect(result[1].object.el).toBe(el);
+    });
+
+    it('should return correct array when given an array', () => {
+        const el = document.createElement('div');
+        const reactiveMembrane = new ReactiveMembrane();
+        const proxy = reactiveMembrane.getProxy([{ foo: 'bar', el }, undefined]);
+        const result = (window as any).devtoolsFormatters[0].header(proxy);
+        expect(result).toEqual([
+            'object', {
+                object: [
+                    {
+                        foo: 'bar',
+                        el
+                    },
+                    undefined
+                ]
+            }
+        ]);
+        expect(result[1].object[0].el).toBe(el);
+    });
+
+    it('body is always null', () => {
+        expect((window as any).devtoolsFormatters[0].hasBody({})).toBe(false);
+        expect((window as any).devtoolsFormatters[0].body({})).toBe(null);
     });
 });

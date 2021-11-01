@@ -134,6 +134,32 @@ describe('ReactiveHandler', () => {
         const desc = Object.getOwnPropertyDescriptor(property, 'foo')!;
         expect(target.getProxy(desc.get!())).toBe(property.foo);
     });
+    it('should understand property desc with setter', function() {
+        const target = new ReactiveMembrane();
+
+        const obj = {};
+        let value;
+        Object.defineProperty(obj, 'foo', {
+            set: function setter(val) {
+                value = val;
+            },
+            enumerable: true
+        });
+
+        const property = target.getProxy(obj);
+        const desc = Object.getOwnPropertyDescriptor(property, 'foo')!;
+        property.foo = 'bar'
+        expect(value).toEqual('bar')
+        desc.set!('baz')
+        expect(value).toEqual('baz')
+    });
+    it('should understand undefined property desc', function () {
+        const target = new ReactiveMembrane();
+        const obj = {};
+        const property = target.getProxy(obj);
+        const desc = Object.getOwnPropertyDescriptor(property, 'fake');
+        expect(desc).toBe(undefined);
+    });
     it('should handle has correctly', function() {
         const target = new ReactiveMembrane();
         const obj = {
@@ -163,7 +189,34 @@ describe('ReactiveHandler', () => {
         };
 
         const wrapped = target.getProxy(obj);
-        expect(Object.isExtensible(wrapped));
+        expect(Object.isExtensible(wrapped)).toBe(true);
+    });
+    it('should handle extensible correctly when target is frozen', function() {
+        const target = new ReactiveMembrane();
+        const hello = {
+            hello: 'world'
+        };
+
+        const obj = {
+            hello
+        };
+
+        const wrapped = target.getProxy(obj);
+        Object.freeze(wrapped);
+        expect(Object.isExtensible(wrapped)).toBe(false);
+    });
+    it('should handle extensible correctly when original target is frozen', function() {
+        const target = new ReactiveMembrane();
+        const hello = {
+            hello: 'world'
+        };
+
+        const obj = Object.freeze({
+            hello
+        });
+
+        const wrapped = target.getProxy(obj);
+        expect(Object.isExtensible(wrapped)).toBe(false);
     });
     it('should handle preventExtensions correctly', function() {
         const target = new ReactiveMembrane();
@@ -181,6 +234,22 @@ describe('ReactiveHandler', () => {
         }).toThrow();
 
         expect(property.foo).toBe('bar');
+    });
+    it('should handle preventExtensions correctly for frozen Proxy', function() {
+        const target = new ReactiveMembrane();
+        const obj = { foo: 'bar' };
+        const property = target.getProxy(obj);
+
+        Object.freeze(property);
+        expect(() => {
+            Object.preventExtensions(property);
+        }).not.toThrow();
+
+        expect(() => {
+            property.nextValue = 'newvalue';
+        }).toThrow();
+
+        expect(property).toEqual({ foo: 'bar' });
     });
     it('should handle defineProperty correctly', function() {
         const target = new ReactiveMembrane();
@@ -449,6 +518,15 @@ describe('ReactiveHandler', () => {
         const proxy = target.getProxy(obj);
         Object.freeze(proxy);
         expect(proxy[sym]).toEqual(symValue);
+    });
+    it('setPrototypeOf should throw', function() {
+        const target = new ReactiveMembrane();
+        const obj = {};
+        const property = target.getProxy(obj);
+
+        expect(() => {
+            Object.setPrototypeOf(property, {});
+        }).toThrow();
     });
     it('should handle Object.getOwnPropertyNames correctly', function() {
         const target = new ReactiveMembrane();
@@ -813,6 +891,36 @@ describe('ReactiveHandler', () => {
             expect(accessSpy).toHaveBeenCalledTimes(2);
             expect(accessSpy).toHaveBeenCalledWith(value, '0');
             expect(accessSpy).toHaveBeenCalledWith(value, '1');
+        });
+
+        it('should handle setting length correctly', function() {
+            const target = new ReactiveMembrane();
+            const obj = {foo: ['bar', 'baz'] };
+            const property = target.getProxy(obj);
+
+            property.foo.length = 0;
+
+            expect(property.foo).toEqual([]);
+
+            property.foo.length = 0;
+
+            expect(property.foo).toEqual([]);
+        });
+
+        it('should handle setting array expando properties', function() {
+            const target = new ReactiveMembrane();
+            const obj = {foo: ['bar', 'baz'] };
+            const property = target.getProxy(obj);
+
+            property.foo.expando = 0;
+
+            expect([...property.foo]).toEqual(['bar', 'baz']);
+            expect(property.foo.expando).toEqual(0);
+
+            property.foo.expando = 0;
+
+            expect([...property.foo]).toEqual(['bar', 'baz']);
+            expect(property.foo.expando).toEqual(0);
         });
 
         describe('access values in array', () => {

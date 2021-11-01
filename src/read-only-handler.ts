@@ -28,6 +28,7 @@ export class ReadOnlyHandler extends BaseProxyHandler {
         }
         const handler = this;
         const set = function (this: any, v: any) {
+            /* istanbul ignore else */
             if (process.env.NODE_ENV !== 'production') {
                 const { originalTarget } = handler;
                 throw new Error(`Invalid mutation: Cannot invoke a setter on "${originalTarget}". "${originalTarget}" is read-only.`);
@@ -37,6 +38,7 @@ export class ReadOnlyHandler extends BaseProxyHandler {
         return set;
     }
     set(shadowTarget: ReactiveMembraneShadowTarget, key: ProxyPropertyKey, value: any): boolean {
+        /* istanbul ignore else */
         if (process.env.NODE_ENV !== 'production') {
             const { originalTarget } = this;
             const msg = isArray(originalTarget) ?
@@ -44,33 +46,41 @@ export class ReadOnlyHandler extends BaseProxyHandler {
                 `Invalid mutation: Cannot set "${key.toString()}" on "${originalTarget}". "${originalTarget}" is read-only.`;
             throw new Error(msg);
         }
+        /* istanbul ignore next */
         return false;
     }
     deleteProperty(shadowTarget: ReactiveMembraneShadowTarget, key: ProxyPropertyKey): boolean {
+        /* istanbul ignore else */
         if (process.env.NODE_ENV !== 'production') {
             const { originalTarget } = this;
             throw new Error(`Invalid mutation: Cannot delete "${key.toString()}" on "${originalTarget}". "${originalTarget}" is read-only.`);
         }
+        /* istanbul ignore next */
         return false;
     }
     setPrototypeOf(shadowTarget: ReactiveMembraneShadowTarget, prototype: any): any {
+        /* istanbul ignore else */
         if (process.env.NODE_ENV !== 'production') {
             const { originalTarget } = this;
             throw new Error(`Invalid prototype mutation: Cannot set prototype on "${originalTarget}". "${originalTarget}" prototype is read-only.`);
         }
     }
     preventExtensions(shadowTarget: ReactiveMembraneShadowTarget): boolean {
+        /* istanbul ignore else */
         if (process.env.NODE_ENV !== 'production') {
             const { originalTarget } = this;
             throw new Error(`Invalid mutation: Cannot preventExtensions on ${originalTarget}". "${originalTarget} is read-only.`);
         }
+        /* istanbul ignore next */
         return false;
     }
     defineProperty(shadowTarget: ReactiveMembraneShadowTarget, key: ProxyPropertyKey, descriptor: PropertyDescriptor): boolean {
+        /* istanbul ignore else */
         if (process.env.NODE_ENV !== 'production') {
             const { originalTarget } = this;
             throw new Error(`Invalid mutation: Cannot defineProperty "${key.toString()}" on "${originalTarget}". "${originalTarget}" is read-only.`);
         }
+        /* istanbul ignore next */
         return false;
     }
 }

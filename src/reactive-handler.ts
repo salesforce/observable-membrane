@@ -112,6 +112,7 @@ export class ReactiveProxyHandler extends BaseProxyHandler {
         return true;
     }
     setPrototypeOf(shadowTarget: ReactiveMembraneShadowTarget, prototype: any): any {
+        /* istanbul ignore else */
         if (process.env.NODE_ENV !== 'production') {
             throw new Error(`Invalid setPrototypeOf invocation for reactive proxy ${toString(this.originalTarget)}. Prototype of reactive objects cannot be changed.`);
         }
@@ -123,6 +124,10 @@ export class ReactiveProxyHandler extends BaseProxyHandler {
             // if the originalTarget is a proxy itself, it might reject
             // the preventExtension call, in which case we should not attempt to lock down
             // the shadow target.
+            // TODO: It should not actually be possible to reach this `if` statement.
+            // If a proxy rejects extensions, then calling preventExtensions will throw an error:
+            // https://codepen.io/nolanlawson-the-selector/pen/QWMOjbY
+            /* istanbul ignore if */
             if (isExtensible(originalTarget)) {
                 return false;
             }

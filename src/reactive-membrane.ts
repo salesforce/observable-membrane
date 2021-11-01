@@ -11,6 +11,7 @@ import { ReactiveProxyHandler } from './reactive-handler';
 import { ReadOnlyHandler } from './read-only-handler';
 import { init as initDevFormatter } from './reactive-dev-formatter';
 
+/* istanbul ignore else */
 if (process.env.NODE_ENV !== 'production') {
     initDevFormatter();
 }
