@@ -158,7 +158,7 @@ describe('ReactiveHandler', () => {
         const obj = {};
         const property = target.getProxy(obj);
         const desc = Object.getOwnPropertyDescriptor(property, 'fake');
-        expect(desc).toBe(undefined);
+        expect(desc).toBeUndefined();
     });
     it('should handle has correctly', function() {
         const target = new ReactiveMembrane();
