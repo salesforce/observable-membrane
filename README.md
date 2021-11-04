@@ -189,7 +189,7 @@ const o = {
 
 const p = membrane.getProxy(o);
 
-o.y !== p.x;
+o.y !== p.y;
 // yields true because `p` is a proxy of `o`
 
 o.y === membrane.unwrapProxy(p.y);
