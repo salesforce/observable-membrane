@@ -1,63 +1,55 @@
-'use strict';
+"use strict";
 
-const path = require('path');
-const replace = require('@rollup/plugin-replace');
-const { terser } = require('rollup-plugin-terser');
-const typescript = require('@rollup/plugin-typescript');
+import { createRequire } from "node:module";
 
-const { version } = require('./package.json');
+import replace from "@rollup/plugin-replace";
+import typescript from "@rollup/plugin-typescript";
 
-const input = path.resolve(__dirname, 'src/main.ts');
+const require = createRequire(import.meta.url);
+const { version } = require("./package.json");
 
-const umdDir = path.resolve(__dirname, 'dist/umd');
-const cjsDir = path.resolve(__dirname, 'dist/commonjs');
-const modulesDir = path.resolve(__dirname, 'dist/modules');
-
-const name = 'ObservableMembrane';
 const banner = `/**\n * Copyright (C) 2017 salesforce.com, inc.\n */`;
 const footer = `/** version: ${version} */`;
+const output = { banner, footer };
 
-function rollupConfig({ formats, prod }) {
-    const replaceToken = JSON.stringify(prod ? 'production' : 'development');
+export default [
+    {
+        input: "src/main.ts",
 
-    const plugins = [
-        typescript({
-            tsconfig: false,
-            target: 'es2016',
-            exclude: ['test/*'],
-        }),
-        prod !== undefined && replace({ 'process.env.NODE_ENV': replaceToken, preventAssignment: true }),
-        prod && terser()
-    ];
+        output: [
+            {
+                ...output,
+                format: "es",
+                file: "dist/observable-membrane.js",
+            },
+            {
+                ...output,
+                format: "cjs",
+                file: "dist/observable-membrane.cjs",
+            },
+        ],
 
-    const output = formats.map(format => {
-        const targetDirectory = format === 'umd' ? umdDir : format === 'cjs' ? cjsDir : modulesDir;
-        const targetName = `observable-membrane${prod ? '.min' : '' }.js`;
+        plugins: [typescript({
+            tsconfig: './tsconfig.json'
+        })],
+    },
+    {
+        input: "src/main.ts",
 
-        return {
-            name,
-            format,
-            banner,
-            footer,
-            file: path.join(targetDirectory, targetName),
-            exports: 'auto'
-        };
-    });
+        output: {
+            ...footer,
+            format: "es",
+            file: "dist/observable-membrane.browser.js",
+        },
 
-    return {
-        input,
-        output,
-        plugins,
-        onwarn: (msg, warn) => {
-            if (!/Circular/.test(msg)) {
-                warn(msg);
-            }
-        }
-    };
-}
-
-module.exports = [
-    rollupConfig({ formats: ['cjs', 'es'] }),
-    rollupConfig({ formats: ['umd'], prod: false }),
-    rollupConfig({ formats: ['umd'], prod: true })
+        plugins: [
+            replace({
+                "process.env.NODE_ENV": JSON.stringify("production"),
+                preventAssignment: true,
+            }),
+            typescript({
+                tsconfig: './tsconfig.json'
+            }),
+        ],
+    },
 ];

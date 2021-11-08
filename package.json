@@ -2,8 +2,8 @@
   "name": "observable-membrane",
   "version": "1.1.5",
   "description": "A Javascript Membrane implementation using Proxies to observe mutation on an object graph",
-  "main": "dist/commonjs/observable-membrane.js",
-  "module": "dist/modules/observable-membrane.js",
+  "main": "dist/observable-membrane.cjs",
+  "module": "dist/observable-membrane.js",
   "typings": "dist/types/main.d.ts",
   "license": "MIT",
   "author": "David Turissini <dturissini@salesforce.com>",
@@ -31,7 +31,7 @@
     "lint": "tslint -p tsconfig.json",
     "test": "jest --config jest.config.js --coverage",
     "prebuild": "rm -rf dist",
-    "build": "tsc --emitDeclarationOnly && rollup -c",
+    "build": "rollup -c",
     "prepare": "yarn build",
     "release:publish:ci": "./scripts/release/publish.js",
     "release:version": "./scripts/release/version.js"
@@ -60,5 +60,13 @@
   "lint-staged": {
     "**/*.{ts,js}": "eslint",
     "{src,test,scripts}/**/*.{ts,js}": "prettier --write"
+  },
+  "exports": {
+    ".": {
+      "node": {
+        "import": "./dist/observable-membrane.js"
+      },
+      "default": "./dist/observable-membrane.browser.js"
+    }
   }
 }
