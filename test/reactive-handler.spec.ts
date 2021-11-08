@@ -4,59 +4,6 @@ function doNothing(_v: any) {
     /* do nothing */
 }
 
-describe('distortion', () => {
-    it('should use distorted value', () => {
-        const o = { x: 1 };
-        const target = new ReactiveMembrane({
-            valueDistortion(value) {
-                if (typeof value === 'number') {
-                    return value * 2;
-                }
-                return value;
-            },
-        });
-
-        const wet = target.getProxy(o);
-        expect(wet.x).toBe(2);
-    });
-
-    it('should call valueObserved when accessing property on distorted value', () => {
-        const o = { x: 1 };
-        const memberAccessSpy = jest.fn();
-        const target = new ReactiveMembrane({
-            valueDistortion(value) {
-                if (typeof value === 'number') {
-                    return value * 2;
-                }
-                return value;
-            },
-            valueObserved: memberAccessSpy,
-        });
-
-        const wet = target.getProxy(o);
-        doNothing(wet.x);
-        expect(memberAccessSpy).toHaveBeenLastCalledWith(o, 'x');
-    });
-
-    it('should call valueMutated when accessing property on distorted value', () => {
-        const o = { x: 1 };
-        const memberChangeSpy = jest.fn();
-        const target = new ReactiveMembrane({
-            valueDistortion(value) {
-                if (typeof value === 'number') {
-                    return value * 2;
-                }
-                return value;
-            },
-            valueMutated: memberChangeSpy,
-        });
-
-        const wet = target.getProxy(o);
-        wet.x = 'changed';
-        expect(memberChangeSpy).toHaveBeenLastCalledWith(o, 'x');
-    });
-});
-
 describe('ReactiveHandler', () => {
     it('should always return the same proxy', () => {
         const o = { x: 1 };
