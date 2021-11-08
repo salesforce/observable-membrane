@@ -31,19 +31,14 @@
     "prebuild": "rm -rf dist",
     "build": "tsc --emitDeclarationOnly && rollup -c",
     "prepare": "yarn build",
-    "changelog": "yarn changelog:generate && yarn changelog:publish",
-    "changelog:generate": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0",
-    "changelog:publish": "git add CHANGELOG.md && git commit -m 'docs(changelog): publish release changelog' && git push",
     "release:publish:ci": "./scripts/release/publish.js",
     "release:version": "./scripts/release/version.js"
   },
-  "//": "Currently can't upgrade TypeScript to v4.4.2 because it breaks Rollup: https://git.io/JuCcs",
   "devDependencies": {
     "@rollup/plugin-replace": "^3.0.0",
     "@rollup/plugin-typescript": "^8.2.5",
     "@types/jest": "^27.0.1",
     "@types/node": "^16.7.13",
-    "conventional-changelog-cli": "^2.1.1",
     "execa": "^5.1.1",
     "is-ci": "^3.0.0",
     "jest": "^27.1.0",
@@ -53,9 +48,6 @@
     "ts-jest": "^27.0.5",
     "tslib": "^2.3.1",
     "tslint": "^6.1.3",
-    "typescript": "4.3.5"
-  },
-  "resolutions": {
-    "**/optimist/minimist": "1.2.5"
+    "typescript": "^4.3.5"
   }
 }
