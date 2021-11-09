@@ -2,9 +2,9 @@
   "name": "observable-membrane",
   "version": "1.1.5",
   "description": "A Javascript Membrane implementation using Proxies to observe mutation on an object graph",
-  "main": "dist/observable-membrane.cjs",
+  "type": "module",
   "module": "dist/observable-membrane.js",
-  "typings": "dist/types/main.d.ts",
+  "typings": "dist/main.d.ts",
   "license": "MIT",
   "author": "David Turissini <dturissini@salesforce.com>",
   "keywords": [
@@ -63,10 +63,8 @@
   },
   "exports": {
     ".": {
-      "node": {
-        "import": "./dist/observable-membrane.js"
-      },
-      "default": "./dist/observable-membrane.browser.js"
+      "browser": "./dist/observable-membrane.browser.js",
+      "default": "./dist/observable-membrane.js"
     }
   }
 }

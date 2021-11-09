@@ -1,6 +1,6 @@
 "use strict";
 
-import { createRequire } from "node:module";
+import { createRequire } from "module";
 
 import replace from "@rollup/plugin-replace";
 import typescript from "@rollup/plugin-typescript";
@@ -16,28 +16,23 @@ export default [
     {
         input: "src/main.ts",
 
-        output: [
-            {
-                ...output,
-                format: "es",
-                file: "dist/observable-membrane.js",
-            },
-            {
-                ...output,
-                format: "cjs",
-                file: "dist/observable-membrane.cjs",
-            },
-        ],
+        output: {
+            ...output,
+            format: "es",
+            file: "dist/observable-membrane.js",
+        },
 
-        plugins: [typescript({
-            tsconfig: './tsconfig.json'
-        })],
+        plugins: [
+            typescript({
+                tsconfig: "./tsconfig.json",
+            }),
+        ],
     },
     {
         input: "src/main.ts",
 
         output: {
-            ...footer,
+            ...output,
             format: "es",
             file: "dist/observable-membrane.browser.js",
         },
@@ -48,7 +43,7 @@ export default [
                 preventAssignment: true,
             }),
             typescript({
-                tsconfig: './tsconfig.json'
+                tsconfig: "./tsconfig.json",
             }),
         ],
     },

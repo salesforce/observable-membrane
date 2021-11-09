@@ -6,8 +6,8 @@
  * SPDX-License-Identifier: MIT
  * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/MIT
  */
-const execa = require('execa');
-const isCI = require('is-ci');
+import execa from 'execa';
+import isCI from 'is-ci';
 
 if (!isCI) {
     console.error('This script is only meant to run in CI.');
