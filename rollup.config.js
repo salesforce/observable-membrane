@@ -34,7 +34,7 @@ export default [
         output: {
             ...output,
             format: "es",
-            file: "dist/observable-membrane.browser.js",
+            file: "dist/observable-membrane.prod.js",
         },
 
         plugins: [
