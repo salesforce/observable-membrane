@@ -4,7 +4,8 @@ import {
     isUndefined,
     getPrototypeOf,
     isFunction,
-    registerProxy, ProxyPropertyKey,
+    registerProxy,
+    ProxyPropertyKey,
 } from './shared';
 import { ReactiveProxyHandler } from './reactive-handler';
 import { ReadOnlyHandler } from './read-only-handler';
@@ -44,7 +45,7 @@ function defaultValueIsObservable(value: any): boolean {
     }
 
     const proto = getPrototypeOf(value);
-    return (proto === ObjectDotPrototype || proto === null || getPrototypeOf(proto) === null);
+    return proto === ObjectDotPrototype || proto === null || getPrototypeOf(proto) === null;
 }
 
 const defaultValueObserved: ReactiveMembraneAccessCallback = (obj: any, key: ProxyPropertyKey) => {
@@ -71,7 +72,9 @@ export class ReactiveMembrane {
         const { valueMutated, valueObserved, valueIsObservable, tagPropertyKey } = options;
         this.valueMutated = isFunction(valueMutated) ? valueMutated : defaultValueMutated;
         this.valueObserved = isFunction(valueObserved) ? valueObserved : defaultValueObserved;
-        this.valueIsObservable = isFunction(valueIsObservable) ? valueIsObservable : defaultValueIsObservable;
+        this.valueIsObservable = isFunction(valueIsObservable)
+            ? valueIsObservable
+            : defaultValueIsObservable;
         this.tagPropertyKey = tagPropertyKey;
     }
 

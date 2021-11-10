@@ -7,7 +7,7 @@ import {
     ObjectDefineProperty,
     hasOwnProperty,
     isUndefined,
-    ProxyPropertyKey
+    ProxyPropertyKey,
 } from './shared';
 import { BaseProxyHandler, ReactiveMembraneShadowTarget } from './base-handler';
 
@@ -44,7 +44,7 @@ export class ReactiveProxyHandler extends BaseProxyHandler {
             originalSet.call(unwrap(this), unwrap(v));
         };
         setterMap.set(originalSet, set);
-        reverseSetterMap.set(set, originalSet);;
+        reverseSetterMap.set(set, originalSet);
         return set;
     }
     unwrapDescriptor(descriptor: PropertyDescriptor): PropertyDescriptor {
@@ -87,11 +87,14 @@ export class ReactiveProxyHandler extends BaseProxyHandler {
             redSet.call(handler.wrapValue(this), handler.wrapValue(v));
         };
         setterMap.set(set, redSet);
-        reverseSetterMap.set(redSet, set);;
+        reverseSetterMap.set(redSet, set);
         return set;
     }
     set(shadowTarget: ReactiveMembraneShadowTarget, key: ProxyPropertyKey, value: any): boolean {
-        const { originalTarget, membrane: { valueMutated } } = this;
+        const {
+            originalTarget,
+            membrane: { valueMutated },
+        } = this;
         const oldValue = originalTarget[key];
         if (oldValue !== value) {
             originalTarget[key] = value;
@@ -106,7 +109,10 @@ export class ReactiveProxyHandler extends BaseProxyHandler {
         return true;
     }
     deleteProperty(shadowTarget: ReactiveMembraneShadowTarget, key: ProxyPropertyKey): boolean {
-        const { originalTarget, membrane: { valueMutated } } = this;
+        const {
+            originalTarget,
+            membrane: { valueMutated },
+        } = this;
         delete originalTarget[key];
         valueMutated(originalTarget, key);
         return true;
@@ -114,7 +120,11 @@ export class ReactiveProxyHandler extends BaseProxyHandler {
     setPrototypeOf(shadowTarget: ReactiveMembraneShadowTarget, prototype: any): any {
         /* istanbul ignore else */
         if (process.env.NODE_ENV !== 'production') {
-            throw new Error(`Invalid setPrototypeOf invocation for reactive proxy ${toString(this.originalTarget)}. Prototype of reactive objects cannot be changed.`);
+            throw new Error(
+                `Invalid setPrototypeOf invocation for reactive proxy ${toString(
+                    this.originalTarget
+                )}. Prototype of reactive objects cannot be changed.`
+            );
         }
     }
     preventExtensions(shadowTarget: ReactiveMembraneShadowTarget): boolean {
@@ -135,8 +145,15 @@ export class ReactiveProxyHandler extends BaseProxyHandler {
         }
         return true;
     }
-    defineProperty(shadowTarget: ReactiveMembraneShadowTarget, key: ProxyPropertyKey, descriptor: PropertyDescriptor): boolean {
-        const { originalTarget, membrane: { valueMutated, tagPropertyKey } } = this;
+    defineProperty(
+        shadowTarget: ReactiveMembraneShadowTarget,
+        key: ProxyPropertyKey,
+        descriptor: PropertyDescriptor
+    ): boolean {
+        const {
+            originalTarget,
+            membrane: { valueMutated, tagPropertyKey },
+        } = this;
         if (key === tagPropertyKey && !hasOwnProperty.call(originalTarget, key)) {
             // To avoid leaking the membrane tag property into the original target, we must
             // be sure that the original target doesn't have yet.

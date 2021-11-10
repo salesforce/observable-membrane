@@ -1,67 +1,67 @@
 import { ReactiveMembrane } from '../src/reactive-membrane';
 import { toString } from '../src/shared';
 
-describe('#defaultValueObservable', function() {
+describe('#defaultValueObservable', function () {
     const isObservable = new ReactiveMembrane().valueIsObservable;
-    it('should return true for plain objects', function() {
+    it('should return true for plain objects', function () {
         const reactive = isObservable({});
         expect(reactive);
     });
 
-    it('should return true for objects with null prototype', function() {
+    it('should return true for objects with null prototype', function () {
         const reactive = isObservable(Object.create(null));
         expect(reactive);
     });
 
-    it('should return true for arrays', function() {
+    it('should return true for arrays', function () {
         const reactive = isObservable([]);
         expect(reactive);
     });
 
-    it('should return false for functions', function() {
-        const reactive = isObservable(function() {
+    it('should return false for functions', function () {
+        const reactive = isObservable(function () {
             // do nothing
         });
         expect(!reactive);
     });
 
-    it('should return false for false', function() {
+    it('should return false for false', function () {
         const reactive = isObservable(false);
         expect(!reactive);
     });
 
-    it('should return false for null', function() {
+    it('should return false for null', function () {
         const reactive = isObservable(null);
         expect(!reactive);
     });
 
-    it('should return false for undefined', function() {
+    it('should return false for undefined', function () {
         const reactive = isObservable(undefined);
         expect(!reactive);
     });
 
-    it('should return false for true', function() {
+    it('should return false for true', function () {
         const reactive = isObservable(true);
         expect(!reactive);
     });
 
-    it('should return false for number', function() {
+    it('should return false for number', function () {
         const reactive = isObservable(1);
         expect(!reactive);
     });
 
-    it('should return false for string', function() {
+    it('should return false for string', function () {
         const reactive = isObservable('foo');
         expect(!reactive);
     });
 
-    it('should return false for extended objects', function() {
+    it('should return false for extended objects', function () {
         const obj = Object.create({});
         const reactive = isObservable(obj);
         expect(!reactive);
     });
 
-    it('should handle cross realm objects', function() {
+    it('should handle cross realm objects', function () {
         const iframe = document.createElement('iframe');
         document.body.appendChild(iframe);
         const obj = (iframe.contentWindow as any).eval('({})');
@@ -71,7 +71,7 @@ describe('#defaultValueObservable', function() {
     it('toString() works objects without toString()', () => {
         const obj = Object.create(null);
         obj.foo = 'bar';
-        expect(toString(obj)).toEqual(toString({ foo: 'bar' }))
+        expect(toString(obj)).toEqual(toString({ foo: 'bar' }));
     });
 
     it('toString() works for undefined', () => {

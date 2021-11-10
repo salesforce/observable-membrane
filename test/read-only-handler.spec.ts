@@ -31,7 +31,7 @@ describe('ReadOnlyHandler', () => {
     });
     it('should handle frozen objects correctly', () => {
         const o = Object.freeze({
-            foo: {}
+            foo: {},
         });
         const target = new ReactiveMembrane();
         const property = target.getReadOnlyProxy(o);
@@ -39,13 +39,13 @@ describe('ReadOnlyHandler', () => {
             doNothing(property.foo);
         }).not.toThrow();
     });
-    it('should maintain equality', function() {
+    it('should maintain equality', function () {
         const target = new ReactiveMembrane();
 
         const a: any = {
             foo: {
-                self: null
-            }
+                self: null,
+            },
         };
 
         a.foo.self = a;
@@ -53,20 +53,20 @@ describe('ReadOnlyHandler', () => {
         const property = target.getReadOnlyProxy(a);
         expect(property.foo.self).toBe(property);
     });
-    it('should understand property desc with getter', function() {
+    it('should understand property desc with getter', function () {
         const target = new ReactiveMembrane();
 
         const obj = {
-            test: 2
+            test: 2,
         };
         const a = {
-            hello: 'world'
+            hello: 'world',
         };
         Object.defineProperty(obj, 'foo', {
             get: function getter() {
                 return a;
             },
-            enumerable: true
+            enumerable: true,
         });
 
         const property = target.getReadOnlyProxy(obj);
@@ -74,16 +74,16 @@ describe('ReadOnlyHandler', () => {
         expect(desc.get!.call(property)).toBe(property.foo);
         expect(target.getReadOnlyProxy(desc.get!.call(property))).toBe(property.foo);
     });
-    it('should handle has correctly', function() {
+    it('should handle has correctly', function () {
         const target = new ReactiveMembrane();
         const obj = {
-            foo: 'bar'
+            foo: 'bar',
         };
 
         const property = target.getReadOnlyProxy(obj);
         expect('foo' in property);
     });
-    it('should throw when deleting', function() {
+    it('should throw when deleting', function () {
         const target = new ReactiveMembrane();
         const obj = [{ foo: 'bar' }];
 
@@ -92,23 +92,23 @@ describe('ReadOnlyHandler', () => {
             delete property[0];
         }).toThrow();
     });
-    it('should handle extensible correctly when target is extensible', function() {
+    it('should handle extensible correctly when target is extensible', function () {
         const target = new ReactiveMembrane();
         const hello = {
-            hello: 'world'
+            hello: 'world',
         };
 
         const obj = {
-            hello
+            hello,
         };
 
         const wrapped = target.getReadOnlyProxy(obj);
         expect(Object.isExtensible(wrapped));
     });
-    it('preventExtensions should throw', function() {
+    it('preventExtensions should throw', function () {
         const target = new ReactiveMembrane();
         const obj = {
-            foo: 'bar'
+            foo: 'bar',
         };
         const property = target.getReadOnlyProxy(obj);
 
@@ -116,23 +116,23 @@ describe('ReadOnlyHandler', () => {
             Object.preventExtensions(property);
         }).toThrow();
     });
-    it('defineProperty should throw', function() {
+    it('defineProperty should throw', function () {
         const target = new ReactiveMembrane();
         const obj = {
-            foo: 'bar'
+            foo: 'bar',
         };
 
         const property = target.getReadOnlyProxy(obj);
         expect(() => {
             Object.defineProperty(property, 'hello', {
-                value: 'world'
+                value: 'world',
             });
         }).toThrow();
     });
-    it('setPrototypeOf should throw', function() {
+    it('setPrototypeOf should throw', function () {
         const target = new ReactiveMembrane();
         const obj = {
-            foo: 'bar'
+            foo: 'bar',
         };
         const property = target.getReadOnlyProxy(obj);
 
@@ -140,49 +140,49 @@ describe('ReadOnlyHandler', () => {
             Object.setPrototypeOf(property, {});
         }).toThrow();
     });
-    it('should handle Object.getOwnPropertyNames correctly', function() {
+    it('should handle Object.getOwnPropertyNames correctly', function () {
         const target = new ReactiveMembrane();
         const obj = {
-            a: 'b'
+            a: 'b',
         };
         const proxy = target.getReadOnlyProxy(obj);
         expect(Object.getOwnPropertyNames(proxy)).toEqual(['a']);
     });
-    it('should handle Object.getOwnPropertyNames when object has symbol', function() {
+    it('should handle Object.getOwnPropertyNames when object has symbol', function () {
         const target = new ReactiveMembrane();
         const sym = Symbol();
         const obj = {
             a: 'b',
-            [sym]: 'symbol'
+            [sym]: 'symbol',
         };
         const proxy = target.getReadOnlyProxy(obj);
         expect(Object.getOwnPropertyNames(proxy)).toEqual(['a']);
     });
-    it('should handle Object.getOwnPropertySymbols when object has symbol', function() {
+    it('should handle Object.getOwnPropertySymbols when object has symbol', function () {
         const target = new ReactiveMembrane();
         const sym = Symbol();
         const obj = {
-            [sym]: 'symbol'
+            [sym]: 'symbol',
         };
         const proxy = target.getReadOnlyProxy(obj);
         expect(Object.getOwnPropertySymbols(proxy)).toEqual([sym]);
     });
-    it('should handle Object.getOwnPropertySymbols when object has symbol and key', function() {
+    it('should handle Object.getOwnPropertySymbols when object has symbol and key', function () {
         const target = new ReactiveMembrane();
         const sym = Symbol();
         const obj = {
             a: 'a',
-            [sym]: 'symbol'
+            [sym]: 'symbol',
         };
         const proxy = target.getReadOnlyProxy(obj);
         expect(Object.getOwnPropertySymbols(proxy)).toEqual([sym]);
     });
-    it('should handle Object.keys when object has symbol and key', function() {
+    it('should handle Object.keys when object has symbol and key', function () {
         const target = new ReactiveMembrane();
         const sym = Symbol();
         const obj = {
             a: 'a',
-            [sym]: 'symbol'
+            [sym]: 'symbol',
         };
         const proxy = target.getReadOnlyProxy(obj);
         expect(Object.keys(proxy)).toEqual(['a']);
@@ -223,7 +223,7 @@ describe('ReadOnlyHandler', () => {
         const obj = {
             foo: {
                 bar: 'baz',
-            }
+            },
         };
         const accessSpy = jest.fn();
         const membrane = new ReactiveMembrane({
@@ -235,7 +235,7 @@ describe('ReadOnlyHandler', () => {
         expect(accessSpy).toHaveBeenCalledTimes(2);
         expect(accessSpy).toHaveBeenLastCalledWith(obj.foo, 'bar');
     });
-    it('should throw when attempting to mutate a read only proxy by transitivity', function() {
+    it('should throw when attempting to mutate a read only proxy by transitivity', function () {
         const target = new ReactiveMembrane();
         const obj = { foo: 'bar' };
 
@@ -245,7 +245,7 @@ describe('ReadOnlyHandler', () => {
             writeAndRead.foo = 'baz';
         }).toThrow();
     });
-    it('should throw when attempting to mutate a read only proxy via initialization of writable proxy', function() {
+    it('should throw when attempting to mutate a read only proxy via initialization of writable proxy', function () {
         const target = new ReactiveMembrane();
         const obj = { foo: 'bar' };
 
@@ -255,7 +255,7 @@ describe('ReadOnlyHandler', () => {
             writeAndRead.x.foo = 'baz';
         }).toThrow();
     });
-    it('should throw when attempting to mutate a read only proxy via mutations of a writable proxy', function() {
+    it('should throw when attempting to mutate a read only proxy via mutations of a writable proxy', function () {
         const target = new ReactiveMembrane();
         const obj = { foo: 'bar' };
 
@@ -290,7 +290,7 @@ describe('ReadOnlyHandler', () => {
                 get() {
                     return { foo: 'bar' };
                 },
-                configurable: true
+                configurable: true,
             });
 
             const proxy = target.getReadOnlyProxy(todos);
@@ -305,14 +305,14 @@ describe('ReadOnlyHandler', () => {
             const target = new ReactiveMembrane();
             const todos = {};
             Object.defineProperty(todos, 'entry', {
-                value : { foo: 'bar' },
-                configurable: true
+                value: { foo: 'bar' },
+                configurable: true,
             });
 
             const proxy = target.getReadOnlyProxy(todos);
             const desc = Object.getOwnPropertyDescriptor(proxy, 'entry');
             const { value } = desc!;
-            expect( () => {
+            expect(() => {
                 value.foo = '';
             }).toThrow();
             expect((todos as any).entry.foo).toEqual('bar');
@@ -328,7 +328,7 @@ describe('ReadOnlyHandler', () => {
                 set(v) {
                     value = v;
                 },
-                configurable: true
+                configurable: true,
             });
             const proxy = target.getReadOnlyProxy(todos);
             const desc = Object.getOwnPropertyDescriptor(proxy, 'entry');
@@ -351,12 +351,12 @@ describe('ReadOnlyHandler', () => {
             Object.defineProperty(todos, 'entry', {
                 get,
                 set,
-                configurable: true
+                configurable: true,
             });
             Object.defineProperty(todos, 'newentry', {
                 get,
                 set,
-                configurable: true
+                configurable: true,
             });
             const proxy = target.getReadOnlyProxy(todos);
             const proxyDesc = Object.getOwnPropertyDescriptor(proxy, 'entry');
@@ -371,7 +371,7 @@ describe('ReadOnlyHandler', () => {
                 valueObserved(o, key) {
                     observedTarget = o;
                     observedKey = key;
-                }
+                },
             });
             const todos = {};
             const observable = {};
@@ -379,7 +379,7 @@ describe('ReadOnlyHandler', () => {
                 get() {
                     return observable;
                 },
-                configurable: true
+                configurable: true,
             });
             const expected = target.getProxy(observable);
 
@@ -391,7 +391,7 @@ describe('ReadOnlyHandler', () => {
             expect(observedTarget).toBe(todos);
         });
     });
-    it('should throw when attempting to change the prototype', function() {
+    it('should throw when attempting to change the prototype', function () {
         const target = new ReactiveMembrane();
         const obj = { foo: 'bar' };
 
@@ -400,7 +400,7 @@ describe('ReadOnlyHandler', () => {
             Object.setPrototypeOf(property, {});
         }).toThrow();
     });
-    it('should throw when attempting to change the prototype of a member property', function() {
+    it('should throw when attempting to change the prototype of a member property', function () {
         const target = new ReactiveMembrane();
         const obj = { foo: { bar: 'baz' } };
 
@@ -440,7 +440,7 @@ describe('ReadOnlyHandler', () => {
         const obj: any[] = [];
         const property = target.getReadOnlyProxy(obj);
         expect(() => {
-            property.push("some object");
+            property.push('some object');
         }).toThrowErrorMatchingInlineSnapshot(
             `"Invalid mutation: Cannot mutate array at index 0. Array is read-only."`
         );

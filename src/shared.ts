@@ -12,10 +12,7 @@ const {
     hasOwnProperty,
 } = Object;
 
-const {
-    push: ArrayPush,
-    concat: ArrayConcat,
-} = Array.prototype;
+const { push: ArrayPush, concat: ArrayConcat } = Array.prototype;
 
 export {
     ArrayPush,

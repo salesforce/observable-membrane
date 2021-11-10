@@ -29,7 +29,7 @@ describe('constructor', () => {
     });
 
     it('should support proxies for RegExp', () => {
-        const regex1 = /fooBar/ig;
+        const regex1 = /fooBar/gi;
         const target = new ReactiveMembrane({
             valueIsObservable(value) {
                 return typeof value === 'object' && value !== null;
@@ -38,7 +38,7 @@ describe('constructor', () => {
 
         const wet = target.getProxy(regex1);
         expect(wet !== regex1).toBe(true);
-        expect(wet.source).toBe("fooBar");
+        expect(wet.source).toBe('fooBar');
     });
 
     it('should support proxies for branded non-plain objects', () => {
