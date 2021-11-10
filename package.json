@@ -61,10 +61,8 @@
     "{src,test,scripts}/**/*.{ts,js}": "prettier --write"
   },
   "exports": {
-    ".": {
-      "production": "./dist/observable-membrane.prod.js",
-      "default": "./dist/observable-membrane.js"
-    }
+    "production": "./dist/observable-membrane.prod.js",
+    "import": "./dist/observable-membrane.js"
   },
   "engines": {
     "node": ">=12"
