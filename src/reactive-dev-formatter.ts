@@ -6,7 +6,8 @@ import {
     getPrototypeOf,
     getOwnPropertyNames,
     getOwnPropertySymbols,
-    unwrap, ProxyPropertyKey
+    unwrap,
+    ProxyPropertyKey,
 } from './shared';
 
 // Define globalThis since it's not current defined in by typescript.
@@ -32,8 +33,8 @@ function extract(objectOrArray: any): any {
 
     const obj = ObjectCreate(getPrototypeOf(objectOrArray));
     const names = getOwnPropertyNames(objectOrArray);
-    return ArrayConcat.call(names, getOwnPropertySymbols(objectOrArray))
-        .reduce((seed: any, key: ProxyPropertyKey) => {
+    return ArrayConcat.call(names, getOwnPropertySymbols(objectOrArray)).reduce(
+        (seed: any, key: ProxyPropertyKey) => {
             const item = objectOrArray[key];
             const original = unwrap(item);
             if (original !== item) {
@@ -42,7 +43,9 @@ function extract(objectOrArray: any): any {
                 seed[key] = item;
             }
             return seed;
-        }, obj);
+        },
+        obj
+    );
 }
 
 const formatter: DevToolFormatter = {
@@ -61,7 +64,7 @@ const formatter: DevToolFormatter = {
     },
     body: () => {
         return null;
-    }
+    },
 };
 
 // Inspired from paulmillr/es6-shim
@@ -70,10 +73,18 @@ const formatter: DevToolFormatter = {
 function getGlobal(): any {
     // the only reliable means to get the global object is `Function('return this')()`
     // However, this causes CSP violations in Chrome apps.
-    if (typeof globalThis !== 'undefined') { return globalThis; }
-    if (typeof self !== 'undefined') { return self; }
-    if (typeof window !== 'undefined') { return window; }
-    if (typeof global !== 'undefined') { return global; }
+    if (typeof globalThis !== 'undefined') {
+        return globalThis;
+    }
+    if (typeof self !== 'undefined') {
+        return self;
+    }
+    if (typeof window !== 'undefined') {
+        return window;
+    }
+    if (typeof global !== 'undefined') {
+        return global;
+    }
 
     // Gracefully degrade if not able to locate the global object
     return {};

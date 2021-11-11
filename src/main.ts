@@ -1,3 +1,1 @@
-export {
-    ReactiveMembrane as default,
-} from './reactive-membrane';
+export { ReactiveMembrane as default } from './reactive-membrane';

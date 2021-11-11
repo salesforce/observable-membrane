@@ -16,7 +16,15 @@ const cwd = process.cwd();
 const packageJson = path.join(cwd, 'package.json');
 const currentVersion = require(packageJson).version;
 
-const VALID_SEMVER_KEYWORDS = ['major', 'minor', 'patch', 'premajor', 'preminor', 'prepatch', 'prerelease'];
+const VALID_SEMVER_KEYWORDS = [
+    'major',
+    'minor',
+    'patch',
+    'premajor',
+    'preminor',
+    'prepatch',
+    'prerelease',
+];
 
 const { stdin, stdout } = process;
 const rl = readline.createInterface({
@@ -39,9 +47,12 @@ rl.question(
         }
 
         const nextVersion = explicitVersion ?? semver.inc(currentVersion, trimmedInput);
-        rl.question(`The current version v${currentVersion} will be updated to v${nextVersion}. Press ENTER or RETURN to continue.`, () => {
-            execa.sync('npm', ['version', nextVersion]);
-            rl.close();
-        });
+        rl.question(
+            `The current version v${currentVersion} will be updated to v${nextVersion}. Press ENTER or RETURN to continue.`,
+            () => {
+                execa.sync('npm', ['version', nextVersion]);
+                rl.close();
+            }
+        );
     }
 );
