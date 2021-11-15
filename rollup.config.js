@@ -1,49 +1,47 @@
-"use strict";
+import { createRequire } from 'module';
 
-import { createRequire } from "module";
-
-import replace from "@rollup/plugin-replace";
-import typescript from "@rollup/plugin-typescript";
+import replace from '@rollup/plugin-replace';
+import typescript from '@rollup/plugin-typescript';
 
 const require = createRequire(import.meta.url);
-const { version } = require("./package.json");
+const { version } = require('./package.json');
 
-const banner = `/**\n * Copyright (C) 2017 salesforce.com, inc.\n */`;
-const footer = `/** version: ${version} */`;
-const output = { banner, footer };
+const output = { 
+    format: 'es', 
+    banner: `/**\n * Copyright (C) 2017 salesforce.com, inc.\n */`, 
+    footer: `/** version: ${version} */`
+};
 
 export default [
     {
-        input: "src/main.ts",
+        input: 'src/main.ts',
 
         output: {
             ...output,
-            format: "es",
-            file: "dist/observable-membrane.js",
+            file: 'dist/observable-membrane.js',
         },
 
         plugins: [
             typescript({
-                tsconfig: "./tsconfig.json",
+                tsconfig: './tsconfig.json',
             }),
         ],
     },
     {
-        input: "src/main.ts",
+        input: 'src/main.ts',
 
         output: {
             ...output,
-            format: "es",
-            file: "dist/observable-membrane.prod.js",
+            file: 'dist/observable-membrane.prod.js',
         },
 
         plugins: [
             replace({
-                "process.env.NODE_ENV": JSON.stringify("production"),
+                'process.env.NODE_ENV': JSON.stringify('production'),
                 preventAssignment: true,
             }),
             typescript({
-                tsconfig: "./tsconfig.json",
+                tsconfig: './tsconfig.json',
             }),
         ],
     },

@@ -65,6 +65,6 @@
     "import": "./dist/observable-membrane.js"
   },
   "engines": {
-    "node": ">=12"
+    "node": "^12.20.0 || ^14.13.1 || >=16.0.0"
   }
 }
