@@ -48,10 +48,7 @@ export abstract class BaseProxyHandler {
         }
         return descriptor;
     }
-    copyDescriptorIntoShadowTarget(
-        shadowTarget: ShadowTarget,
-        key: ProxyPropertyKey
-    ) {
+    copyDescriptorIntoShadowTarget(shadowTarget: ShadowTarget, key: ProxyPropertyKey) {
         const { originalTarget } = this;
         // Note: a property might get defined multiple times in the shadowTarget
         //       but it will always be compatible with the previous descriptor
@@ -84,15 +81,8 @@ export abstract class BaseProxyHandler {
 
     // Abstract Traps
 
-    abstract set(
-        shadowTarget: ShadowTarget,
-        key: ProxyPropertyKey,
-        value: any
-    ): boolean;
-    abstract deleteProperty(
-        shadowTarget: ShadowTarget,
-        key: ProxyPropertyKey
-    ): boolean;
+    abstract set(shadowTarget: ShadowTarget, key: ProxyPropertyKey, value: any): boolean;
+    abstract deleteProperty(shadowTarget: ShadowTarget, key: ProxyPropertyKey): boolean;
     abstract setPrototypeOf(shadowTarget: ShadowTarget, prototype: any): any;
     abstract preventExtensions(shadowTarget: ShadowTarget): boolean;
     abstract defineProperty(
