@@ -1,1 +1,1 @@
-export { ReactiveMembrane as ObservableMembrane } from './reactive-membrane';
+export { ObservableMembrane } from './observable-membrane';

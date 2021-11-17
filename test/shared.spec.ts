@@ -1,8 +1,8 @@
-import { ReactiveMembrane } from '../src/reactive-membrane';
+import { ObservableMembrane } from '../src/main';
 import { toString } from '../src/shared';
 
 describe('#defaultValueObservable', function () {
-    const isObservable = new ReactiveMembrane().valueIsObservable;
+    const isObservable = new ObservableMembrane().valueIsObservable;
     it('should return true for plain objects', function () {
         const reactive = isObservable({});
         expect(reactive);
