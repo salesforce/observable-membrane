@@ -3,13 +3,12 @@
     // Compilation Configuration
     "target": "es2016",
     "declaration": true,
-    "module": "es2015",
-    "declarationDir": "dist/types",
+    "module": "ESNext",
+    "outDir": "dist",
+    "declarationDir": ".",
 
     // Environment Configuration
     "esModuleInterop": true,
-    "moduleResolution": "node",
-    "lib": ["es2015", "es2016", "dom"],
 
     // Enhance Strictness
     "strict": true,
@@ -17,10 +16,5 @@
     "suppressImplicitAnyIndexErrors": true,
     "noImplicitReturns": true,
   },
-  "include": [
-    "src"
-  ],
-  "exclude": [
-    "test"
-  ]
+  "exclude": ["dist", "test"],
 }

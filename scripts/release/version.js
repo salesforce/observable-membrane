@@ -6,15 +6,15 @@
  * SPDX-License-Identifier: MIT
  * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/MIT
  */
-const execa = require('execa');
-const semver = require('semver');
+import path from 'path';
+import { createRequire } from 'module';
 
-const path = require('path');
-const readline = require('readline');
+import execa from 'execa';
+import semver from 'semver';
+import readline from 'readline';
 
-const cwd = process.cwd();
-const packageJson = path.join(cwd, 'package.json');
-const currentVersion = require(packageJson).version;
+const require = createRequire(import.meta.url);
+const currentVersion = require('../../package.json').version;
 
 const VALID_SEMVER_KEYWORDS = [
     'major',

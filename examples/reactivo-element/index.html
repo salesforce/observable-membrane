@@ -2,9 +2,9 @@
 <html lang="en-US">
     <head>
         <title>Reactivo Element Examples for ObservableMembrane</title>
-        <script src="../../dist/umd/observable-membrane.js"></script>
+        <script type="module">
+            import ObservableMembrane from "../../dist/observable-membrane.prod.js";
 
-        <script>
             // ReactivoElement is a simple abstraction on top of Web Component
             class ReactiveElement extends HTMLElement {
                 constructor() {
@@ -44,9 +44,7 @@
                     });
                 }
             }
-        </script>
 
-        <script>
             class XFoo extends ReactiveElement {
                 constructor() {
                     super();
