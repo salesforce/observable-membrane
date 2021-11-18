@@ -9,7 +9,7 @@ import {
     isUndefined,
     ProxyPropertyKey,
 } from './shared';
-import { BaseProxyHandler, ReactiveMembraneShadowTarget } from './base-handler';
+import { BaseProxyHandler, ShadowTarget } from './base-handler';
 
 const getterMap = new WeakMap<() => any, () => any>();
 const setterMap = new WeakMap<(v: any) => void, (v: any) => void>();
@@ -90,7 +90,7 @@ export class ReactiveProxyHandler extends BaseProxyHandler {
         reverseSetterMap.set(redSet, set);
         return set;
     }
-    set(shadowTarget: ReactiveMembraneShadowTarget, key: ProxyPropertyKey, value: any): boolean {
+    set(shadowTarget: ShadowTarget, key: ProxyPropertyKey, value: any): boolean {
         const {
             originalTarget,
             membrane: { valueMutated },
@@ -108,7 +108,7 @@ export class ReactiveProxyHandler extends BaseProxyHandler {
         }
         return true;
     }
-    deleteProperty(shadowTarget: ReactiveMembraneShadowTarget, key: ProxyPropertyKey): boolean {
+    deleteProperty(shadowTarget: ShadowTarget, key: ProxyPropertyKey): boolean {
         const {
             originalTarget,
             membrane: { valueMutated },
@@ -117,7 +117,7 @@ export class ReactiveProxyHandler extends BaseProxyHandler {
         valueMutated(originalTarget, key);
         return true;
     }
-    setPrototypeOf(shadowTarget: ReactiveMembraneShadowTarget, prototype: any): any {
+    setPrototypeOf(shadowTarget: ShadowTarget, prototype: any): any {
         /* istanbul ignore else */
         if (process.env.NODE_ENV !== 'production') {
             throw new Error(
@@ -127,7 +127,7 @@ export class ReactiveProxyHandler extends BaseProxyHandler {
             );
         }
     }
-    preventExtensions(shadowTarget: ReactiveMembraneShadowTarget): boolean {
+    preventExtensions(shadowTarget: ShadowTarget): boolean {
         if (isExtensible(shadowTarget)) {
             const { originalTarget } = this;
             preventExtensions(originalTarget);
@@ -146,7 +146,7 @@ export class ReactiveProxyHandler extends BaseProxyHandler {
         return true;
     }
     defineProperty(
-        shadowTarget: ReactiveMembraneShadowTarget,
+        shadowTarget: ShadowTarget,
         key: ProxyPropertyKey,
         descriptor: PropertyDescriptor
     ): boolean {

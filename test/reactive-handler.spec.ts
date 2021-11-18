@@ -1,4 +1,4 @@
-import { ReactiveMembrane } from '../src/reactive-membrane';
+import { ObservableMembrane } from '../src/main';
 
 function doNothing(_v: any) {
     /* do nothing */
@@ -7,7 +7,7 @@ function doNothing(_v: any) {
 describe('ReactiveHandler', () => {
     it('should always return the same proxy', () => {
         const o = { x: 1 };
-        const target = new ReactiveMembrane();
+        const target = new ObservableMembrane();
 
         const first = target.getProxy(o);
         const second = target.getProxy(o);
@@ -16,7 +16,7 @@ describe('ReactiveHandler', () => {
     });
     it('should never rewrap a previously produced proxy', () => {
         const o = { x: 1 };
-        const target = new ReactiveMembrane();
+        const target = new ObservableMembrane();
         const first = target.getProxy(o);
         const second = target.getProxy(first);
         expect(first.x).toBe(second.x);
@@ -24,7 +24,7 @@ describe('ReactiveHandler', () => {
     });
     it('should rewrap unknown proxy', () => {
         const o = { x: 1 };
-        const target = new ReactiveMembrane();
+        const target = new ObservableMembrane();
         const first = new Proxy(o, {});
         const second = target.getProxy(first);
         expect(first).not.toBe(second);
@@ -33,7 +33,7 @@ describe('ReactiveHandler', () => {
         const o = Object.freeze({
             foo: {},
         });
-        const target = new ReactiveMembrane();
+        const target = new ObservableMembrane();
         const property = target.getProxy(o);
         expect(() => {
             doNothing(property.foo);
@@ -41,14 +41,14 @@ describe('ReactiveHandler', () => {
     });
     it('should handle freezing proxy correctly', function () {
         const o = { foo: 'bar' };
-        const target = new ReactiveMembrane();
+        const target = new ObservableMembrane();
         const property = target.getProxy(o);
         expect(() => {
             Object.freeze(property);
         }).not.toThrow();
     });
     it('should maintain equality', function () {
-        const target = new ReactiveMembrane();
+        const target = new ObservableMembrane();
 
         const a: any = {
             foo: {
@@ -62,7 +62,7 @@ describe('ReactiveHandler', () => {
         expect(property.foo.self).toBe(property);
     });
     it('should understand property desc with getter', function () {
-        const target = new ReactiveMembrane();
+        const target = new ObservableMembrane();
 
         const obj = {
             test: 2,
@@ -82,7 +82,7 @@ describe('ReactiveHandler', () => {
         expect(target.getProxy(desc.get!())).toBe(property.foo);
     });
     it('should understand property desc with setter', function () {
-        const target = new ReactiveMembrane();
+        const target = new ObservableMembrane();
 
         const obj = {};
         let value;
@@ -101,14 +101,14 @@ describe('ReactiveHandler', () => {
         expect(value).toEqual('baz');
     });
     it('should understand undefined property desc', function () {
-        const target = new ReactiveMembrane();
+        const target = new ObservableMembrane();
         const obj = {};
         const property = target.getProxy(obj);
         const desc = Object.getOwnPropertyDescriptor(property, 'fake');
         expect(desc).toBeUndefined();
     });
     it('should handle has correctly', function () {
-        const target = new ReactiveMembrane();
+        const target = new ObservableMembrane();
         const obj = {
             foo: 'bar',
         };
@@ -117,7 +117,7 @@ describe('ReactiveHandler', () => {
         expect('foo' in property);
     });
     it('should delete writable properties correctly', function () {
-        const target = new ReactiveMembrane();
+        const target = new ObservableMembrane();
         const obj = [{ foo: 'bar' }];
 
         const property = target.getProxy(obj);
@@ -126,7 +126,7 @@ describe('ReactiveHandler', () => {
         expect(result);
     });
     it('should handle extensible correctly when target is extensible', function () {
-        const target = new ReactiveMembrane();
+        const target = new ObservableMembrane();
         const hello = {
             hello: 'world',
         };
@@ -139,7 +139,7 @@ describe('ReactiveHandler', () => {
         expect(Object.isExtensible(wrapped)).toBe(true);
     });
     it('should handle extensible correctly when target is frozen', function () {
-        const target = new ReactiveMembrane();
+        const target = new ObservableMembrane();
         const obj = {};
 
         const wrapped = target.getProxy(obj);
@@ -147,14 +147,14 @@ describe('ReactiveHandler', () => {
         expect(Object.isExtensible(wrapped)).toBe(false);
     });
     it('should handle extensible correctly when original target is frozen', function () {
-        const target = new ReactiveMembrane();
+        const target = new ObservableMembrane();
         const obj = Object.freeze({});
 
         const wrapped = target.getProxy(obj);
         expect(Object.isExtensible(wrapped)).toBe(false);
     });
     it('should handle preventExtensions correctly', function () {
-        const target = new ReactiveMembrane();
+        const target = new ObservableMembrane();
         const obj = {
             foo: 'bar',
         };
@@ -171,7 +171,7 @@ describe('ReactiveHandler', () => {
         expect(property.foo).toBe('bar');
     });
     it('should handle preventExtensions correctly for frozen Proxy', function () {
-        const target = new ReactiveMembrane();
+        const target = new ObservableMembrane();
         const obj = { foo: 'bar' };
         const property = target.getProxy(obj);
 
@@ -187,7 +187,7 @@ describe('ReactiveHandler', () => {
         expect(property).toEqual({ foo: 'bar' });
     });
     it('should handle defineProperty correctly', function () {
-        const target = new ReactiveMembrane();
+        const target = new ObservableMembrane();
         const obj = {
             foo: 'bar',
         };
@@ -199,7 +199,7 @@ describe('ReactiveHandler', () => {
         expect(property.hello).toBe('world');
     });
     it('should assign correct value on original object with defineProperty correctly', function () {
-        const target = new ReactiveMembrane();
+        const target = new ObservableMembrane();
         const other = {};
         const obj: any = {
             foo: 'bar',
@@ -213,7 +213,7 @@ describe('ReactiveHandler', () => {
         expect(obj.nonreactive).toBe(obj.other);
     });
     it('should handle defineProperty correctly with undefined non-configurable descriptor', function () {
-        const target = new ReactiveMembrane();
+        const target = new ObservableMembrane();
         const obj = {
             foo: 'bar',
         };
@@ -226,7 +226,7 @@ describe('ReactiveHandler', () => {
         expect(property.hello).toBe(undefined);
     });
     it('should handle defineProperty correctly when descriptor is non-configurable', function () {
-        const target = new ReactiveMembrane();
+        const target = new ObservableMembrane();
         const obj = {
             foo: 'bar',
         };
@@ -240,7 +240,7 @@ describe('ReactiveHandler', () => {
         expect(wet.hello).toBe('world');
     });
     it('should not allow deleting non-configurable property', function () {
-        const target = new ReactiveMembrane();
+        const target = new ObservableMembrane();
         const obj = {
             foo: 'bar',
         };
@@ -256,7 +256,7 @@ describe('ReactiveHandler', () => {
         }).toThrow();
     });
     it('should not allow re-defining non-configurable property', function () {
-        const target = new ReactiveMembrane();
+        const target = new ObservableMembrane();
         const obj = {
             foo: 'bar',
         };
@@ -275,7 +275,7 @@ describe('ReactiveHandler', () => {
         }).toThrow();
     });
     it('should handle preventExtensions', function () {
-        const target = new ReactiveMembrane();
+        const target = new ObservableMembrane();
         const obj = {
             nested: {
                 foo: 'bar',
@@ -293,7 +293,7 @@ describe('ReactiveHandler', () => {
         }).not.toThrow();
     });
     it('should handle preventExtensions when original target has non-configurable property', function () {
-        const target = new ReactiveMembrane();
+        const target = new ObservableMembrane();
         const obj = {};
         const nested = {};
         Object.defineProperty(obj, 'foo', {
@@ -310,7 +310,7 @@ describe('ReactiveHandler', () => {
         expect(property.foo.nested).toBe(target.getProxy(nested));
     });
     it('should not throw an exception when preventExtensions is called on proxy and property is accessed', function () {
-        const target = new ReactiveMembrane();
+        const target = new ObservableMembrane();
         const todos = [
             { text: 'Learn JavaScript' },
             { text: 'Learn Web Components' },
@@ -323,7 +323,7 @@ describe('ReactiveHandler', () => {
         }).not.toThrow();
     });
     it('should not throw an exception when array proxy is frozen and property is accessed', function () {
-        const target = new ReactiveMembrane();
+        const target = new ObservableMembrane();
         const todos = [
             { text: 'Learn JavaScript' },
             { text: 'Learn Web Components' },
@@ -337,7 +337,7 @@ describe('ReactiveHandler', () => {
     });
 
     it('should not throw an exception when object proxy is frozen and property is accessed', function () {
-        const target = new ReactiveMembrane();
+        const target = new ObservableMembrane();
         const todos = {
             first: { text: 'Learn JavaScript' },
         };
@@ -350,7 +350,7 @@ describe('ReactiveHandler', () => {
     });
 
     it('should not throw an exception when object proxy is frozen and property with undefined value is accessed', function () {
-        const target = new ReactiveMembrane();
+        const target = new ObservableMembrane();
         const todos = {
             first: undefined,
         };
@@ -363,7 +363,7 @@ describe('ReactiveHandler', () => {
     });
 
     it('should not throw an exception when object proxy is frozen and property with null value is accessed', function () {
-        const target = new ReactiveMembrane();
+        const target = new ObservableMembrane();
         const todos = {
             first: null,
         };
@@ -376,7 +376,7 @@ describe('ReactiveHandler', () => {
     });
 
     it('should not throw an exception when object proxy is frozen and property with getter is accessed', function () {
-        const target = new ReactiveMembrane();
+        const target = new ObservableMembrane();
         const todos = {};
         Object.defineProperty(todos, 'first', {
             get() {
@@ -391,7 +391,7 @@ describe('ReactiveHandler', () => {
         expect(proxy.first).toEqual({ text: 'Learn JavaScript' });
     });
     it('should not throw when using hasOwnProperty on nested frozen property', function () {
-        const target = new ReactiveMembrane();
+        const target = new ObservableMembrane();
         const obj = { frozen: { foo: { bar: true } } };
         const proxy = target.getProxy(obj);
         Object.freeze(proxy.frozen);
@@ -401,7 +401,7 @@ describe('ReactiveHandler', () => {
         }).not.toThrow();
     });
     it('should not throw when using hasOwnProperty on frozen property', function () {
-        const target = new ReactiveMembrane();
+        const target = new ObservableMembrane();
         const obj = { foo: 'bar' };
         const proxy = target.getProxy(obj);
         Object.defineProperty(proxy, 'foo', {
@@ -414,7 +414,7 @@ describe('ReactiveHandler', () => {
         }).not.toThrow();
     });
     it('should handle defineProperty with writable false and undefined value', function () {
-        const target = new ReactiveMembrane();
+        const target = new ObservableMembrane();
         const todos = {};
         Object.defineProperty(todos, 'first', {
             value: 'foo',
@@ -428,7 +428,7 @@ describe('ReactiveHandler', () => {
         expect(proxy.first).toEqual(undefined);
     });
     it('should handle defineProperty for getter with writable false and no value', function () {
-        const target = new ReactiveMembrane();
+        const target = new ObservableMembrane();
         const todos = {};
         Object.defineProperty(todos, 'first', {
             get() {
@@ -443,7 +443,7 @@ describe('ReactiveHandler', () => {
         expect(proxy.first).toEqual(undefined);
     });
     it('should freeze objects correctly when object has symbols', function () {
-        const target = new ReactiveMembrane();
+        const target = new ObservableMembrane();
         const sym = Symbol();
         const symValue = { sym: 'value' };
         const obj = {
@@ -455,7 +455,7 @@ describe('ReactiveHandler', () => {
         expect(proxy[sym]).toEqual(symValue);
     });
     it('setPrototypeOf should throw', function () {
-        const target = new ReactiveMembrane();
+        const target = new ObservableMembrane();
         const obj = {};
         const property = target.getProxy(obj);
 
@@ -464,7 +464,7 @@ describe('ReactiveHandler', () => {
         }).toThrow();
     });
     it('should handle Object.getOwnPropertyNames correctly', function () {
-        const target = new ReactiveMembrane();
+        const target = new ObservableMembrane();
         const obj = {
             a: 'b',
         };
@@ -472,7 +472,7 @@ describe('ReactiveHandler', () => {
         expect(Object.getOwnPropertyNames(proxy)).toEqual(['a']);
     });
     it('should handle Object.getOwnPropertyNames when object has symbol', function () {
-        const target = new ReactiveMembrane();
+        const target = new ObservableMembrane();
         const sym = Symbol();
         const obj = {
             a: 'b',
@@ -482,7 +482,7 @@ describe('ReactiveHandler', () => {
         expect(Object.getOwnPropertyNames(proxy)).toEqual(['a']);
     });
     it('should handle Object.getOwnPropertySymbols when object has symbol', function () {
-        const target = new ReactiveMembrane();
+        const target = new ObservableMembrane();
         const sym = Symbol();
         const obj = {
             [sym]: 'symbol',
@@ -491,7 +491,7 @@ describe('ReactiveHandler', () => {
         expect(Object.getOwnPropertySymbols(proxy)).toEqual([sym]);
     });
     it('should handle Object.getOwnPropertySymbols when object has symbol and key', function () {
-        const target = new ReactiveMembrane();
+        const target = new ObservableMembrane();
         const sym = Symbol();
         const obj = {
             a: 'a',
@@ -501,7 +501,7 @@ describe('ReactiveHandler', () => {
         expect(Object.getOwnPropertySymbols(proxy)).toEqual([sym]);
     });
     it('should handle Object.keys when object has symbol and key', function () {
-        const target = new ReactiveMembrane();
+        const target = new ObservableMembrane();
         const sym = Symbol();
         const obj = {
             a: 'a',
@@ -512,14 +512,14 @@ describe('ReactiveHandler', () => {
     });
 
     it('should maintain equality', () => {
-        const membrane = new ReactiveMembrane();
+        const membrane = new ObservableMembrane();
 
         const obj = {};
         expect(membrane.getProxy(obj)).toBe(membrane.getProxy(obj));
     });
 
     it('should allow deep mutations', () => {
-        const membrane = new ReactiveMembrane();
+        const membrane = new ObservableMembrane();
 
         const obj = membrane.getProxy({});
         expect(() => {
@@ -532,7 +532,7 @@ describe('ReactiveHandler', () => {
             foo: 'bar',
         };
         const changeSpy = jest.fn();
-        const membrane = new ReactiveMembrane({
+        const membrane = new ObservableMembrane({
             valueMutated: changeSpy,
         });
 
@@ -549,7 +549,7 @@ describe('ReactiveHandler', () => {
             },
         };
         const changeSpy = jest.fn();
-        const membrane = new ReactiveMembrane({
+        const membrane = new ObservableMembrane({
             valueMutated: changeSpy,
         });
 
@@ -564,7 +564,7 @@ describe('ReactiveHandler', () => {
             foo: 'bar',
         };
         const accessSpy = jest.fn();
-        const membrane = new ReactiveMembrane({
+        const membrane = new ObservableMembrane({
             valueObserved: accessSpy,
         });
 
@@ -581,7 +581,7 @@ describe('ReactiveHandler', () => {
             },
         };
         const accessSpy = jest.fn();
-        const membrane = new ReactiveMembrane({
+        const membrane = new ObservableMembrane({
             valueObserved: accessSpy,
         });
 
@@ -593,7 +593,7 @@ describe('ReactiveHandler', () => {
 
     describe('issue #20 - getOwnPropertyDescriptor', () => {
         it('should return reactive proxy when property value accessed via accessor descriptor', () => {
-            const target = new ReactiveMembrane();
+            const target = new ObservableMembrane();
             const todos = {};
             const observable = {};
             Object.defineProperty(todos, 'foo', {
@@ -612,7 +612,7 @@ describe('ReactiveHandler', () => {
             expect(get!()).toBe(expected);
         });
         it('should return reactive proxy when property value accessed via data descriptor', () => {
-            const target = new ReactiveMembrane();
+            const target = new ObservableMembrane();
             const todos = {};
             const observable = {};
             Object.defineProperty(todos, 'foo', {
@@ -629,7 +629,7 @@ describe('ReactiveHandler', () => {
             expect(value).toBe(expected);
         });
         it('should allow set invocation via descriptor', () => {
-            const target = new ReactiveMembrane();
+            const target = new ObservableMembrane();
             const todos = {};
             let value = 0;
             const newValue = {};
@@ -650,7 +650,7 @@ describe('ReactiveHandler', () => {
             expect(proxy.entry).toEqual(get!.call(proxy));
         });
         it('should preserve the identity of the accessors', () => {
-            const target = new ReactiveMembrane();
+            const target = new ObservableMembrane();
             const todos = {};
             let value = 0;
             function get() {
@@ -675,7 +675,7 @@ describe('ReactiveHandler', () => {
             expect(proxyDesc!.set).toEqual(proxyCopiedDesc!.set);
         });
         it('should protect against leaking accessors into the blue side', () => {
-            const target = new ReactiveMembrane();
+            const target = new ObservableMembrane();
             const todos: any = {};
             let value = 0;
             let getterThisValue = null;
@@ -720,7 +720,7 @@ describe('ReactiveHandler', () => {
         it('should be reactive when descriptor is accessed', () => {
             let observedTarget;
             let observedKey;
-            const target = new ReactiveMembrane({
+            const target = new ObservableMembrane({
                 valueObserved(o, key) {
                     observedTarget = o;
                     observedKey = key;
@@ -748,7 +748,7 @@ describe('ReactiveHandler', () => {
     describe('values that do not need to be wrapped', () => {
         let target: any;
         beforeEach(() => {
-            target = new ReactiveMembrane();
+            target = new ObservableMembrane();
         });
         it('should not try to make date object reactive', () => {
             const date = new Date();
@@ -775,7 +775,7 @@ describe('ReactiveHandler', () => {
     describe('handles array type values', () => {
         let defaultMembrane: any;
         beforeEach(() => {
-            defaultMembrane = new ReactiveMembrane();
+            defaultMembrane = new ObservableMembrane();
         });
         it('wraps array', () => {
             const value: any[] = [];
@@ -816,7 +816,7 @@ describe('ReactiveHandler', () => {
         it('should notify when values accessed', () => {
             const value = ['foo', { nested: 'bar' }];
             const accessSpy = jest.fn();
-            const observedMembrane = new ReactiveMembrane({
+            const observedMembrane = new ObservableMembrane({
                 valueObserved: accessSpy,
             });
 
@@ -829,7 +829,7 @@ describe('ReactiveHandler', () => {
         });
 
         it('should handle setting length correctly', function () {
-            const target = new ReactiveMembrane();
+            const target = new ObservableMembrane();
             const obj = { foo: ['bar', 'baz'] };
             const property = target.getProxy(obj);
 
@@ -844,7 +844,7 @@ describe('ReactiveHandler', () => {
         });
 
         it('should handle setting array expando properties', function () {
-            const target = new ReactiveMembrane();
+            const target = new ObservableMembrane();
             const obj = { foo: ['bar', 'baz'] };
             const property = target.getProxy(obj);
 
@@ -867,7 +867,7 @@ describe('ReactiveHandler', () => {
             beforeEach(() => {
                 accessSpy = jest.fn();
                 changeSpy = jest.fn();
-                membrane = new ReactiveMembrane({
+                membrane = new ObservableMembrane({
                     valueObserved: accessSpy,
                     valueMutated: changeSpy,
                 });
@@ -904,7 +904,7 @@ describe('ReactiveHandler', () => {
             let changeSpy: any;
             beforeEach(() => {
                 changeSpy = jest.fn();
-                membrane = new ReactiveMembrane({
+                membrane = new ObservableMembrane({
                     valueMutated: changeSpy,
                 });
             });
@@ -929,7 +929,7 @@ describe('ReactiveHandler', () => {
     describe('with tag key property', () => {
         it('should support tagPropertyKey', () => {
             const o = {};
-            const target = new ReactiveMembrane({
+            const target = new ObservableMembrane({
                 tagPropertyKey: 'foo',
             });
 
@@ -941,7 +941,7 @@ describe('ReactiveHandler', () => {
         });
         it('should not shadow tagPropertyKey if the target has it', () => {
             const o = { foo: 1 };
-            const target = new ReactiveMembrane({
+            const target = new ObservableMembrane({
                 tagPropertyKey: 'foo',
             });
 
@@ -953,7 +953,7 @@ describe('ReactiveHandler', () => {
         });
         it('should support frozen target when using tagPropertyKey', () => {
             const o = Object.freeze({});
-            const target = new ReactiveMembrane({
+            const target = new ObservableMembrane({
                 tagPropertyKey: 'foo',
             });
 
@@ -965,7 +965,7 @@ describe('ReactiveHandler', () => {
         });
         it('should support freezing the proxy when using tagPropertyKey', () => {
             const o = {};
-            const target = new ReactiveMembrane({
+            const target = new ObservableMembrane({
                 tagPropertyKey: 'foo',
             });
 
@@ -978,7 +978,7 @@ describe('ReactiveHandler', () => {
         });
         it('should return the proper the descriptor for the tag property', () => {
             const o = {};
-            const target = new ReactiveMembrane({
+            const target = new ObservableMembrane({
                 tagPropertyKey: 'foo',
             });
 
@@ -992,7 +992,7 @@ describe('ReactiveHandler', () => {
         });
         it('should allow dynamic manipulation of the tag key in original target', () => {
             const o = {};
-            const target = new ReactiveMembrane({
+            const target = new ObservableMembrane({
                 tagPropertyKey: '$$MagicKey$$',
             });
 
@@ -1013,7 +1013,7 @@ describe('ReactiveHandler', () => {
         });
         it('should allow original target to exhibit the tag key as configurable', () => {
             const dry = {};
-            const target = new ReactiveMembrane({
+            const target = new ObservableMembrane({
                 tagPropertyKey: '$$MagicKey$$',
             });
 
@@ -1045,7 +1045,7 @@ describe('ReactiveHandler', () => {
         });
         it('should allow original target to exhibit the tag key as non-configurable', () => {
             const dry = {};
-            const target = new ReactiveMembrane({
+            const target = new ObservableMembrane({
                 tagPropertyKey: '$$MagicKey$$',
             });
 
@@ -1079,7 +1079,7 @@ describe('ReactiveHandler', () => {
         });
     });
     it('should return undefined when input is undefined', () => {
-        const target = new ReactiveMembrane();
+        const target = new ObservableMembrane();
         const state = target.getProxy(undefined);
         expect(state).toBe(undefined);
     });

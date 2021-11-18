@@ -1,5 +1,4 @@
-import '../src/reactive-dev-formatter';
-import { ReactiveMembrane } from '../src/reactive-membrane';
+import { ObservableMembrane } from '../src/main';
 
 describe('reactive dev formatter', function () {
     it('should add an array to window', function () {
@@ -12,8 +11,8 @@ describe('reactive dev formatter', function () {
 
     it('should return correct object when given reactive proxy', function () {
         const el = document.createElement('div');
-        const reactiveMembrane = new ReactiveMembrane();
-        const proxy = reactiveMembrane.getProxy({ foo: 'bar', el, baz: { quux: 'quux' } });
+        const membrane = new ObservableMembrane();
+        const proxy = membrane.getProxy({ foo: 'bar', el, baz: { quux: 'quux' } });
         const result = (window as any).devtoolsFormatters[0].header(proxy);
         expect(result).toEqual([
             'object',
@@ -30,8 +29,8 @@ describe('reactive dev formatter', function () {
 
     it('should return correct array when given an array', () => {
         const el = document.createElement('div');
-        const reactiveMembrane = new ReactiveMembrane();
-        const proxy = reactiveMembrane.getProxy([{ foo: 'bar', el }, undefined]);
+        const membrane = new ObservableMembrane();
+        const proxy = membrane.getProxy([{ foo: 'bar', el }, undefined]);
         const result = (window as any).devtoolsFormatters[0].header(proxy);
         expect(result).toEqual([
             'object',

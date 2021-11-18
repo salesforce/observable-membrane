@@ -1,23 +1,23 @@
-import { ReactiveMembrane } from '../src/reactive-membrane';
+import { ObservableMembrane } from '../src/main';
 
 describe('constructor', () => {
     it('should work without any config', () => {
         const o = { x: 1 };
-        const target = new ReactiveMembrane();
+        const target = new ObservableMembrane();
         const wet = target.getProxy(o);
         expect(wet.x).toBe(1);
     });
 
     it('should work with empty config', () => {
         const o = { x: 1 };
-        const target = new ReactiveMembrane({});
+        const target = new ObservableMembrane({});
         const wet = target.getProxy(o);
         expect(wet.x).toBe(1);
     });
 
     it('should allow valueIsObservable to return false', () => {
         const o = { x: 1 };
-        const target = new ReactiveMembrane({
+        const target = new ObservableMembrane({
             valueIsObservable(value) {
                 return false;
             },
@@ -30,7 +30,7 @@ describe('constructor', () => {
 
     it('should support proxies for RegExp', () => {
         const regex1 = /fooBar/gi;
-        const target = new ReactiveMembrane({
+        const target = new ObservableMembrane({
             valueIsObservable(value) {
                 return typeof value === 'object' && value !== null;
             },
@@ -57,7 +57,7 @@ describe('constructor', () => {
         const tag = Symbol.for('@@myMembraneTag');
         const blue = new Foo();
         Object.defineProperty(blue, tag, {});
-        const target = new ReactiveMembrane({
+        const target = new ObservableMembrane({
             valueIsObservable(value) {
                 return typeof value === 'object' && value !== null && value.hasOwnProperty(tag);
             },
@@ -73,7 +73,7 @@ describe('constructor', () => {
     });
 
     it('should support undefined tagPropertyKey', () => {
-        const target = new ReactiveMembrane({
+        const target = new ObservableMembrane({
             tagPropertyKey: undefined,
         });
 
@@ -83,7 +83,7 @@ describe('constructor', () => {
 
     it('should support tagPropertyKey as string', () => {
         const o = {};
-        const target = new ReactiveMembrane({
+        const target = new ObservableMembrane({
             tagPropertyKey: 'foo',
         });
 
@@ -97,7 +97,7 @@ describe('constructor', () => {
     it('should support tagPropertyKey as symbol', () => {
         const o = {};
         const k = Symbol();
-        const target = new ReactiveMembrane({
+        const target = new ObservableMembrane({
             tagPropertyKey: k,
         });
 

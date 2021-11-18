@@ -1,6 +1,7 @@
 const { isArray } = Array;
 
 const {
+    prototype: ObjectDotPrototype,
     getPrototypeOf,
     create: ObjectCreate,
     defineProperty: ObjectDefineProperty,
@@ -21,6 +22,7 @@ export {
     getPrototypeOf,
     ObjectCreate,
     ObjectDefineProperty,
+    ObjectDotPrototype,
     isExtensible,
     getOwnPropertyDescriptor,
     getOwnPropertyNames,

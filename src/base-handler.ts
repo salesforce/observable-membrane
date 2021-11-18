@@ -13,15 +13,15 @@ import {
     ObjectCreate,
     ProxyPropertyKey,
 } from './shared';
-import { ReactiveMembrane } from './reactive-membrane';
+import { ObservableMembrane } from './observable-membrane';
 
-export type ReactiveMembraneShadowTarget = object;
+export type ShadowTarget = object;
 
 export abstract class BaseProxyHandler {
     originalTarget: any;
-    membrane: ReactiveMembrane;
+    membrane: ObservableMembrane;
 
-    constructor(membrane: ReactiveMembrane, value: any) {
+    constructor(membrane: ObservableMembrane, value: any) {
         this.originalTarget = value;
         this.membrane = membrane;
     }
@@ -48,10 +48,7 @@ export abstract class BaseProxyHandler {
         }
         return descriptor;
     }
-    copyDescriptorIntoShadowTarget(
-        shadowTarget: ReactiveMembraneShadowTarget,
-        key: ProxyPropertyKey
-    ) {
+    copyDescriptorIntoShadowTarget(shadowTarget: ShadowTarget, key: ProxyPropertyKey) {
         const { originalTarget } = this;
         // Note: a property might get defined multiple times in the shadowTarget
         //       but it will always be compatible with the previous descriptor
@@ -64,7 +61,7 @@ export abstract class BaseProxyHandler {
             ObjectDefineProperty(shadowTarget, key, wrappedDesc);
         }
     }
-    lockShadowTarget(shadowTarget: ReactiveMembraneShadowTarget): void {
+    lockShadowTarget(shadowTarget: ShadowTarget): void {
         const { originalTarget } = this;
         const targetKeys: ProxyPropertyKey[] = ArrayConcat.call(
             getOwnPropertyNames(originalTarget),
@@ -84,19 +81,12 @@ export abstract class BaseProxyHandler {
 
     // Abstract Traps
 
-    abstract set(
-        shadowTarget: ReactiveMembraneShadowTarget,
-        key: ProxyPropertyKey,
-        value: any
-    ): boolean;
-    abstract deleteProperty(
-        shadowTarget: ReactiveMembraneShadowTarget,
-        key: ProxyPropertyKey
-    ): boolean;
-    abstract setPrototypeOf(shadowTarget: ReactiveMembraneShadowTarget, prototype: any): any;
-    abstract preventExtensions(shadowTarget: ReactiveMembraneShadowTarget): boolean;
+    abstract set(shadowTarget: ShadowTarget, key: ProxyPropertyKey, value: any): boolean;
+    abstract deleteProperty(shadowTarget: ShadowTarget, key: ProxyPropertyKey): boolean;
+    abstract setPrototypeOf(shadowTarget: ShadowTarget, prototype: any): any;
+    abstract preventExtensions(shadowTarget: ShadowTarget): boolean;
     abstract defineProperty(
-        shadowTarget: ReactiveMembraneShadowTarget,
+        shadowTarget: ShadowTarget,
         key: ProxyPropertyKey,
         descriptor: PropertyDescriptor
     ): boolean;
@@ -105,15 +95,15 @@ export abstract class BaseProxyHandler {
 
     // TODO: apply() is never called
     /* istanbul ignore next */
-    apply(shadowTarget: ReactiveMembraneShadowTarget, thisArg: any, argArray: any[]) {
+    apply(shadowTarget: ShadowTarget, thisArg: any, argArray: any[]) {
         /* No op */
     }
     // TODO: construct() is never called
     /* istanbul ignore next */
-    construct(shadowTarget: ReactiveMembraneShadowTarget, argArray: any, newTarget?: any): any {
+    construct(shadowTarget: ShadowTarget, argArray: any, newTarget?: any): any {
         /* No op */
     }
-    get(shadowTarget: ReactiveMembraneShadowTarget, key: ProxyPropertyKey): any {
+    get(shadowTarget: ShadowTarget, key: ProxyPropertyKey): any {
         const {
             originalTarget,
             membrane: { valueObserved },
@@ -122,7 +112,7 @@ export abstract class BaseProxyHandler {
         valueObserved(originalTarget, key);
         return this.wrapValue(value);
     }
-    has(shadowTarget: ReactiveMembraneShadowTarget, key: ProxyPropertyKey): boolean {
+    has(shadowTarget: ShadowTarget, key: ProxyPropertyKey): boolean {
         const {
             originalTarget,
             membrane: { tagPropertyKey, valueObserved },
@@ -132,7 +122,7 @@ export abstract class BaseProxyHandler {
         // we can simply compare them as the second part of the condition.
         return key in originalTarget || key === tagPropertyKey;
     }
-    ownKeys(shadowTarget: ReactiveMembraneShadowTarget): ProxyPropertyKey[] {
+    ownKeys(shadowTarget: ShadowTarget): ProxyPropertyKey[] {
         const {
             originalTarget,
             membrane: { tagPropertyKey },
@@ -147,7 +137,7 @@ export abstract class BaseProxyHandler {
         ArrayPush.apply(keys, getOwnPropertySymbols(originalTarget));
         return keys;
     }
-    isExtensible(shadowTarget: ReactiveMembraneShadowTarget): boolean {
+    isExtensible(shadowTarget: ShadowTarget): boolean {
         const { originalTarget } = this;
         // optimization to avoid attempting to lock down the shadowTarget multiple times
         if (!isExtensible(shadowTarget)) {
@@ -159,12 +149,12 @@ export abstract class BaseProxyHandler {
         }
         return true;
     }
-    getPrototypeOf(shadowTarget: ReactiveMembraneShadowTarget): object {
+    getPrototypeOf(shadowTarget: ShadowTarget): object {
         const { originalTarget } = this;
         return getPrototypeOf(originalTarget);
     }
     getOwnPropertyDescriptor(
-        shadowTarget: ReactiveMembraneShadowTarget,
+        shadowTarget: ShadowTarget,
         key: ProxyPropertyKey
     ): PropertyDescriptor | undefined {
         const {
