@@ -41,7 +41,7 @@ p.y.z;
 // yields 1
 ```
 
-_Note: If the value that you're accessing via the membrane is an object that can be observed, then the membrane will return a proxy around it. In the example above, `o.y !== p.y` because it is a proxy that applies the exact same mechanism. In other words, the membrane is applicable to an entire object graph._
+_Note: If the value that you're accessing via the membrane is an object that can be observed, then the membrane will return a proxy around it. In the example above, `o.y !== p.y` because `p.y` is a proxy that applies the exact same mechanism. In other words, the membrane is applicable to an entire object graph._
 
 #### Observing Access and Mutations
 
@@ -140,7 +140,7 @@ const o = {
 
 const p = membrane.getProxy(o);
 
-o.y !== p.x;
+o.y !== p.y;
 // yields true because `p` is a proxy of `o`
 
 o.y === membrane.unwrapProxy(p.y);
