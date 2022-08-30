@@ -37,12 +37,12 @@
     "release:version": "./scripts/release/version.js"
   },
   "devDependencies": {
-    "@commitlint/cli": "^17.0.3",
-    "@commitlint/config-conventional": "^17.0.3",
+    "@commitlint/cli": "^17.1.2",
+    "@commitlint/config-conventional": "^17.1.0",
     "@rollup/plugin-replace": "^4.0.0",
-    "@rollup/plugin-typescript": "^8.3.4",
+    "@rollup/plugin-typescript": "^8.4.0",
     "@types/jest": "^28.1.6",
-    "@types/node": "^18.6.3",
+    "@types/node": "^18.7.14",
     "execa": "^6.1.0",
     "husky": "^8.0.1",
     "is-ci": "^3.0.0",
@@ -50,12 +50,12 @@
     "jest-environment-jsdom": "^28.1.3",
     "lint-staged": "^13.0.3",
     "prettier": "^2.7.1",
-    "rollup": "^2.77.2",
+    "rollup": "^2.78.1",
     "semver": "^7.3.7",
-    "ts-jest": "^28.0.7",
+    "ts-jest": "^28.0.8",
     "tslib": "^2.4.0",
     "tslint": "^6.1.3",
-    "typescript": "^4.7.4"
+    "typescript": "^4.8.2"
   },
   "lint-staged": {
     "**/*.{ts,js}": "eslint",
