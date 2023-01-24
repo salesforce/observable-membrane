@@ -1,10 +1,13 @@
 export default {
     testEnvironment: "jsdom",
     preset: "ts-jest",
-    globals: {
-        "ts-jest": {
-            diagnostics: false
-        }
+    transform: {
+        "'^.+\\.ts$'": [
+            "ts-jest",
+            {
+                diagnostics: false
+            }
+        ]
     },
     coverageThreshold: {
         global: {
