@@ -65,7 +65,7 @@ export abstract class BaseProxyHandler {
         const { originalTarget } = this;
         const targetKeys: ProxyPropertyKey[] = ArrayConcat.call(
             getOwnPropertyNames(originalTarget),
-            getOwnPropertySymbols(originalTarget)
+            getOwnPropertySymbols(originalTarget),
         );
         targetKeys.forEach((key: ProxyPropertyKey) => {
             this.copyDescriptorIntoShadowTarget(shadowTarget, key);
@@ -88,7 +88,7 @@ export abstract class BaseProxyHandler {
     abstract defineProperty(
         shadowTarget: ShadowTarget,
         key: ProxyPropertyKey,
-        descriptor: PropertyDescriptor
+        descriptor: PropertyDescriptor,
     ): boolean;
 
     // Shared Traps
@@ -155,7 +155,7 @@ export abstract class BaseProxyHandler {
     }
     getOwnPropertyDescriptor(
         shadowTarget: ShadowTarget,
-        key: ProxyPropertyKey
+        key: ProxyPropertyKey,
     ): PropertyDescriptor | undefined {
         const {
             originalTarget,

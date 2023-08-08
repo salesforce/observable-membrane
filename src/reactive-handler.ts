@@ -122,8 +122,8 @@ export class ReactiveProxyHandler extends BaseProxyHandler {
         if (process.env.NODE_ENV !== 'production') {
             throw new Error(
                 `Invalid setPrototypeOf invocation for reactive proxy ${toString(
-                    this.originalTarget
-                )}. Prototype of reactive objects cannot be changed.`
+                    this.originalTarget,
+                )}. Prototype of reactive objects cannot be changed.`,
             );
         }
     }
@@ -148,7 +148,7 @@ export class ReactiveProxyHandler extends BaseProxyHandler {
     defineProperty(
         shadowTarget: ShadowTarget,
         key: ProxyPropertyKey,
-        descriptor: PropertyDescriptor
+        descriptor: PropertyDescriptor,
     ): boolean {
         const {
             originalTarget,

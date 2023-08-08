@@ -52,7 +52,7 @@ rl.question(
             () => {
                 execa.sync('npm', ['version', nextVersion]);
                 rl.close();
-            }
+            },
         );
-    }
+    },
 );

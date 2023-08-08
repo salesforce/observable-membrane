@@ -44,7 +44,7 @@ function extract(objectOrArray: any): any {
             }
             return seed;
         },
-        obj
+        obj,
     );
 }
 

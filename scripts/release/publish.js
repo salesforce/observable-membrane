@@ -37,7 +37,7 @@ try {
     const distTag = releaseBranch === 'master' ? 'next' : releaseBranch;
 
     console.log(
-        `Attempting to release from branch "${releaseBranch}" using dist-tag "${distTag}".`
+        `Attempting to release from branch "${releaseBranch}" using dist-tag "${distTag}".`,
     );
 
     execa.commandSync(`npm publish --tag ${distTag} --registry=https://registry.npmjs.org`);
