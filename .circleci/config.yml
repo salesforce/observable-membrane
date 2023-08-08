@@ -14,7 +14,7 @@ executors:
   node:
     working_directory: ~/observable-membrane
     docker:
-      - image: circleci/node:18
+      - image: cimg/node:18.17.0
 
 
 commands:
