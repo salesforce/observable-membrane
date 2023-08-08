@@ -8,7 +8,7 @@ const { version } = require('./package.json');
 
 const output = {
     format: 'es',
-    banner: `/**\n * Copyright (C) 2017 salesforce.com, inc.\n */`,
+    banner: `/**\n * Copyright (C) 2023 Salesforce.com, Inc.\n */`,
     footer: `/** version: ${version} */`
 };
 
