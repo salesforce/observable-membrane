@@ -13,7 +13,6 @@
     // Enhance Strictness
     "strict": true,
     "noUnusedLocals": true,
-    "suppressImplicitAnyIndexErrors": true,
     "noImplicitReturns": true,
   },
   "exclude": ["dist", "test"],
