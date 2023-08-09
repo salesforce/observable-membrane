@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2023, Salesforce.com, Inc.
+ * All rights reserved.
+ * SPDX-License-Identifier: MIT
+ * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/MIT
+ */
 import { unwrap, isArray, isUndefined, ProxyPropertyKey } from './shared';
 import { BaseProxyHandler, ShadowTarget } from './base-handler';
 
@@ -32,7 +38,7 @@ export class ReadOnlyHandler extends BaseProxyHandler {
             if (process.env.NODE_ENV !== 'production') {
                 const { originalTarget } = handler;
                 throw new Error(
-                    `Invalid mutation: Cannot invoke a setter on "${originalTarget}". "${originalTarget}" is read-only.`
+                    `Invalid mutation: Cannot invoke a setter on "${originalTarget}". "${originalTarget}" is read-only.`,
                 );
             }
         };
@@ -56,7 +62,7 @@ export class ReadOnlyHandler extends BaseProxyHandler {
         if (process.env.NODE_ENV !== 'production') {
             const { originalTarget } = this;
             throw new Error(
-                `Invalid mutation: Cannot delete "${key.toString()}" on "${originalTarget}". "${originalTarget}" is read-only.`
+                `Invalid mutation: Cannot delete "${key.toString()}" on "${originalTarget}". "${originalTarget}" is read-only.`,
             );
         }
         /* istanbul ignore next */
@@ -67,7 +73,7 @@ export class ReadOnlyHandler extends BaseProxyHandler {
         if (process.env.NODE_ENV !== 'production') {
             const { originalTarget } = this;
             throw new Error(
-                `Invalid prototype mutation: Cannot set prototype on "${originalTarget}". "${originalTarget}" prototype is read-only.`
+                `Invalid prototype mutation: Cannot set prototype on "${originalTarget}". "${originalTarget}" prototype is read-only.`,
             );
         }
     }
@@ -76,7 +82,7 @@ export class ReadOnlyHandler extends BaseProxyHandler {
         if (process.env.NODE_ENV !== 'production') {
             const { originalTarget } = this;
             throw new Error(
-                `Invalid mutation: Cannot preventExtensions on ${originalTarget}". "${originalTarget} is read-only.`
+                `Invalid mutation: Cannot preventExtensions on ${originalTarget}". "${originalTarget} is read-only.`,
             );
         }
         /* istanbul ignore next */
@@ -85,13 +91,13 @@ export class ReadOnlyHandler extends BaseProxyHandler {
     defineProperty(
         shadowTarget: ShadowTarget,
         key: ProxyPropertyKey,
-        descriptor: PropertyDescriptor
+        descriptor: PropertyDescriptor,
     ): boolean {
         /* istanbul ignore else */
         if (process.env.NODE_ENV !== 'production') {
             const { originalTarget } = this;
             throw new Error(
-                `Invalid mutation: Cannot defineProperty "${key.toString()}" on "${originalTarget}". "${originalTarget}" is read-only.`
+                `Invalid mutation: Cannot defineProperty "${key.toString()}" on "${originalTarget}". "${originalTarget}" is read-only.`,
             );
         }
         /* istanbul ignore next */

@@ -766,7 +766,7 @@ describe('ReactiveHandler', () => {
         });
         it.each(
             // tslint:disable-next-line:no-empty
-            [undefined, null, 'foo', true, false, 1, Symbol(), () => {}]
+            [undefined, null, 'foo', true, false, 1, Symbol(), () => {}],
         )('should not treat following value as reactive: %s', (value) => {
             expect(target.getProxy(value)).toBe(value);
         });

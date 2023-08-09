@@ -442,7 +442,7 @@ describe('ReadOnlyHandler', () => {
         expect(() => {
             property.push('some object');
         }).toThrowErrorMatchingInlineSnapshot(
-            `"Invalid mutation: Cannot mutate array at index 0. Array is read-only."`
+            `"Invalid mutation: Cannot mutate array at index 0. Array is read-only."`,
         );
     });
     it('should return undefined when input is undefined', () => {

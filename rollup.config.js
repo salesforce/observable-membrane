@@ -6,11 +6,22 @@ import typescript from '@rollup/plugin-typescript';
 const require = createRequire(import.meta.url);
 const { version } = require('./package.json');
 
-const output = { 
-    format: 'es', 
-    banner: `/**\n * Copyright (C) 2017 salesforce.com, inc.\n */`, 
+const output = {
+    format: 'es',
+    banner: `/**\n * Copyright (C) 2023 Salesforce.com, Inc.\n */`,
     footer: `/** version: ${version} */`
 };
+
+const onwarn = ({ code, message }) => {
+    if (code !== 'CIRCULAR_DEPENDENCY') {
+        throw new Error(message); // make all warnings into errors
+    }
+};
+
+const typescriptPlugin = typescript({
+    tsconfig: './tsconfig.json',
+    noEmitOnError: false // make typescript errors actual errors
+})
 
 export default [
     {
@@ -22,10 +33,10 @@ export default [
         },
 
         plugins: [
-            typescript({
-                tsconfig: './tsconfig.json',
-            }),
+            typescriptPlugin,
         ],
+
+        onwarn
     },
     {
         input: 'src/main.ts',
@@ -40,9 +51,9 @@ export default [
                 'process.env.NODE_ENV': JSON.stringify('production'),
                 preventAssignment: true,
             }),
-            typescript({
-                tsconfig: './tsconfig.json',
-            }),
+            typescriptPlugin,
         ],
+
+        onwarn
     },
 ];
