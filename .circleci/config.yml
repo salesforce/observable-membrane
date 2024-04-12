@@ -14,7 +14,7 @@ executors:
   node:
     working_directory: ~/observable-membrane
     docker:
-      - image: cimg/node:18.20.1
+      - image: cimg/node:20.12.2
 
 
 commands:
